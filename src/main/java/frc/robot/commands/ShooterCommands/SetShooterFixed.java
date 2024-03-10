@@ -15,7 +15,7 @@ public class SetShooterFixed extends Command {
   public SetShooterFixed(ShooterPivot shooterpivot, double pos) {
     this.shooterpivot = shooterpivot;
     this.position = pos;
-    this.pid = new PIDController(1, 0, 0);
+    this.pid = new PIDController(1.7, 0.04, 0);
     addRequirements(shooterpivot);
   }
 
@@ -24,6 +24,7 @@ public class SetShooterFixed extends Command {
   public void initialize() {
     System.out.println("Fixed Start");
     pid.reset();
+    shooterpivot.setBrakeMode();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -36,7 +37,6 @@ public class SetShooterFixed extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    shooterpivot.stopShooterPivot();
     System.out.println("Fixed End");
   }
 

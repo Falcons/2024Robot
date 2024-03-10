@@ -4,11 +4,11 @@
 
 package frc.robot.subsystems;
 
-import java.util.HashMap;
 import java.util.TreeMap;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -28,6 +28,7 @@ public class ShooterPivot extends SubsystemBase {
     //thruBore.setZeroOffset(ShooterConstants.thruBoreZeroOffset);
     thruBore.setPositionConversionFactor(1);
     setShooterPivotMap();
+    setBrakeMode();
   }
   
   public void setShooterPivotMap() {
@@ -118,11 +119,15 @@ public class ShooterPivot extends SubsystemBase {
   }
 
   public boolean getSoftUpperLimit() {
-    return (thruBore.getPosition() > 0.953);
+    return (thruBore.getPosition() > ShooterConstants.pivotUpperLimit);
   }
 
   public boolean getSoftLowerLimit() {
-    return (thruBore.getPosition() < 0.88);
+    return (thruBore.getPosition() < ShooterConstants.pivotLowerLimit);
+  }
+
+  public void setBrakeMode() {
+    pivot.setIdleMode(IdleMode.kBrake);
   }
 
   @Override
@@ -132,6 +137,7 @@ public class ShooterPivot extends SubsystemBase {
 
     SmartDashboard.putBoolean("Pivot Limit Switch", getPivotLimit());
     SmartDashboard.putBoolean("Soft Limit Enabled", getSoftUpperLimit());
+    SmartDashboard.putNumber("Pivot Mode", pivot.getIdleMode().value);
   }
 
   public Command Up(double speed) {

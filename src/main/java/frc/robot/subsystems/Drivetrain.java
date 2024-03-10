@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems;
 
-import java.util.HashMap;
-
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -13,6 +11,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -35,8 +34,20 @@ public class Drivetrain extends SubsystemBase {
   private final DifferentialDriveOdometry odometry;
 
   public Drivetrain() {
+    frontRight.restoreFactoryDefaults();
+    frontLeft.restoreFactoryDefaults();
+    backRight.restoreFactoryDefaults();
+    backLeft.restoreFactoryDefaults();
+
+    Timer.delay(4);
+
     drive.setSafetyEnabled(false);
-    frontRight.setInverted(true);
+
+    frontLeft.setInverted(true);
+    backLeft.setInverted(true);
+
+    frontRight.setInverted(false);
+    backRight.setInverted(false);
 
     backRight.follow(frontRight);
     backLeft.follow(frontLeft);
@@ -47,8 +58,6 @@ public class Drivetrain extends SubsystemBase {
     
     frontRightEncoder.setPositionConversionFactor(DriveConstants.RevToMetre);
     frontLeftEncoder.setPositionConversionFactor(DriveConstants.RevToMetre);
-    backRightEncoder.setPositionConversionFactor(DriveConstants.RevToMetre);
-    backLeftEncoder.setPositionConversionFactor(DriveConstants.RevToMetre);
 
     odometry = new DifferentialDriveOdometry(
       gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition());
@@ -58,12 +67,31 @@ public class Drivetrain extends SubsystemBase {
     frontRight.stopMotor();
   }
 
+  public void invertMotors() {
+    frontLeft.setInverted(true);
+    backLeft.setInverted(true);
+
+    frontRight.setInverted(false);
+    backRight.setInverted(false);
+  }
+
+  public void resetEncoders() {
+    frontLeftEncoder.setPosition(0);
+    frontRightEncoder.setPosition(0);
+    backLeftEncoder.setPosition(0);
+    backRightEncoder.setPosition(0);
+  }
+
   public void setSafteyEnabled(boolean state) {
     drive.setSafetyEnabled(state);
   }
   
   public void tankDrive(double leftSpeed, double rightSpeed){
     drive.tankDrive(leftSpeed, rightSpeed);
+  }
+
+  public void setYaw(double value) {
+    gyro.setYaw(value);
   }
 
   public void arcadeDriveManual(double speed, double rotation) {
@@ -85,7 +113,13 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     odometry.update(gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition());
-    SmartDashboard.putNumber("Gyro Angle", gyro.getAngle());
+    SmartDashboard.putNumber("Gyro Angle", gyro.getYaw().getValueAsDouble());
+
+    SmartDashboard.putNumber("FL", frontLeft.get());
+    SmartDashboard.putNumber("FR", frontRight.get());
+
+    SmartDashboard.putNumber("FL Distance", frontLeftEncoder.getPosition());
+    SmartDashboard.putNumber("FR Distance", frontRightEncoder.getPosition());
   }
 
   public double getAngle() {

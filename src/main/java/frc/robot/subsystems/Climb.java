@@ -27,6 +27,7 @@ public class Climb extends SubsystemBase {
 
   public Climb() {
     rightClimb.setInverted(true);
+    setCoastMode();
   }
 
   public void setClimb(double leftSpeed, double rightSpeed) {
