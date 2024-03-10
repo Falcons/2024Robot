@@ -67,11 +67,21 @@ public class Intake extends SubsystemBase {
     return (tof.getRange() < 155);
   }
 
+  public String getRetractedorExtended() {
+    if (getIntakeAngle() > 0.365) {
+      return "Retracted";
+    } else {
+      return "Extended";
+    }
+  }
+
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Intake Thru Bore", intakeThruBore.getPosition());
     SmartDashboard.putBoolean("Intake Limit", intakeLimit.get());
     SmartDashboard.putNumber("TOF", tof.getRange());
+    SmartDashboard.putBoolean("Has Note", hasNote());
+    SmartDashboard.putString("Intake", getRetractedorExtended());
   }
 
   public Command IntakeNoteCmd(double speed) {

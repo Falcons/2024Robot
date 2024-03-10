@@ -13,7 +13,9 @@ import frc.robot.commands.DriveCommands.ArcadeDriveCmd;
 import frc.robot.commands.DriveCommands.CentretoNote;
 import frc.robot.commands.DriveCommands.CentretoSpeaker;
 import frc.robot.commands.DriveCommands.DriveStraight;
+import frc.robot.commands.DriveCommands.FastMode;
 import frc.robot.commands.DriveCommands.InvertDrive;
+import frc.robot.commands.DriveCommands.SlowMode;
 import frc.robot.commands.IntakeCommands.Extend;
 import frc.robot.commands.IntakeCommands.Retract;
 import frc.robot.commands.ShooterCommands.Down;
@@ -71,7 +73,10 @@ public class RobotContainer {
     //invert
     driver.a().whileTrue(new InvertDrive(drivetrain));
 
-    driver.a().whileTrue(new DriveStraight(drivetrain, 0.2));
+    //Fast and Slow
+    driver.x().whileTrue(new FastMode(drivetrain));
+    driver.rightTrigger().whileTrue(new SlowMode(drivetrain));
+
     // Intake wheels manual
     operator.x().whileTrue(intake.IntakeNoteCmd(0.3));
     operator.a().whileTrue(intake.EjectNoteCmd(1));

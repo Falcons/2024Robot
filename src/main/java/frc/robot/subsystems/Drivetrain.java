@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -14,6 +15,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 
@@ -30,8 +32,6 @@ public class Drivetrain extends SubsystemBase {
   private final RelativeEncoder backLeftEncoder = backLeft.getEncoder();
 
   private final DifferentialDrive drive = new DifferentialDrive(frontLeft::set, frontRight::set);
-
-  private final DifferentialDriveOdometry odometry;
 
   public Drivetrain() {
     frontRight.restoreFactoryDefaults();
@@ -59,9 +59,26 @@ public class Drivetrain extends SubsystemBase {
     frontRightEncoder.setPositionConversionFactor(DriveConstants.RevToMetre);
     frontLeftEncoder.setPositionConversionFactor(DriveConstants.RevToMetre);
 
-    odometry = new DifferentialDriveOdometry(
-      gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition());
   }
+
+  public void setMaxSpeed(double speed) {
+    drive.setMaxOutput(speed);
+  }
+
+  public void setBrakeMode() {
+    frontRight.setIdleMode(IdleMode.kBrake);
+    frontLeft.setIdleMode(IdleMode.kBrake);
+    backRight.setIdleMode(IdleMode.kBrake);
+    backLeft.setIdleMode(IdleMode.kBrake);
+  }
+
+  public void setCoastMode() {
+    frontRight.setIdleMode(IdleMode.kCoast);
+    frontLeft.setIdleMode(IdleMode.kCoast);
+    backRight.setIdleMode(IdleMode.kCoast);
+    backLeft.setIdleMode(IdleMode.kCoast);
+  }
+
   public void stopMotors() {
     frontLeft.stopMotor();
     frontRight.stopMotor();
@@ -112,7 +129,6 @@ public class Drivetrain extends SubsystemBase {
 
   @Override
   public void periodic() {
-    odometry.update(gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition());
     SmartDashboard.putNumber("Gyro Angle", gyro.getYaw().getValueAsDouble());
 
     SmartDashboard.putNumber("FL", frontLeft.get());
@@ -124,13 +140,5 @@ public class Drivetrain extends SubsystemBase {
 
   public double getAngle() {
     return gyro.getAngle();
-  }
-
-  public Pose2d getPose() {
-    return odometry.getPoseMeters();
-  }
-
-  public void resetOdometry(Pose2d pose) {
-    odometry.resetPosition(gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition(), pose);
   }
 }
