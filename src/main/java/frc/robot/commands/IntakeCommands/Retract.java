@@ -15,11 +15,13 @@ public class Retract extends Command {
   public Retract(Intake intake) {
     this.intake = intake;
     this.pid = new PIDController(1.5, 0, 0);
+    addRequirements(intake);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    System.out.println("Retract Start");
     intake.IntakeNote(0);
     pid.reset();
   }
@@ -33,11 +35,13 @@ public class Retract extends Command {
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    System.out.println("Retract End");
+  }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return intake.getBottomSoftLimit();
+    return pid.atSetpoint();
   }
 }

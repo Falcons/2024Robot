@@ -37,8 +37,12 @@ public final class Constants {
 
         public static final double speakerDepth = 0.89;
 
-        public static final double pivotUpperLimit = 0.974;
-        public static final double pivotLowerLimit = 0.895;
+        public static final double pivotUpperLimit = 0.944;
+        public static final double pivotLowerLimit = 0.893;
+
+        public static final double thruBoreRawToDegrees = 360;
+
+        public static final double degreesToRadians = Math.PI / 180.0;
     }
 
     public static final class ClimbConstants {

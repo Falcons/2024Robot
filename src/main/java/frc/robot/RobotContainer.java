@@ -15,6 +15,7 @@ import frc.robot.commands.DriveCommands.CentretoSpeaker;
 import frc.robot.commands.DriveCommands.DriveStraight;
 import frc.robot.commands.DriveCommands.FastMode;
 import frc.robot.commands.DriveCommands.InvertDrive;
+import frc.robot.commands.DriveCommands.RotateToAngle;
 import frc.robot.commands.DriveCommands.SlowMode;
 import frc.robot.commands.IntakeCommands.Extend;
 import frc.robot.commands.IntakeCommands.Retract;
@@ -22,6 +23,7 @@ import frc.robot.commands.ShooterCommands.Down;
 import frc.robot.commands.ShooterCommands.SetShooterFixed;
 import frc.robot.commands.ShooterCommands.SetShooterPosition;
 import frc.robot.commands.ShooterCommands.Shoot;
+import frc.robot.commands.ShooterCommands.Up;
 import frc.robot.subsystems.Climb;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
@@ -65,9 +67,12 @@ public class RobotContainer {
     driver.rightBumper().whileTrue(new CentretoSpeaker(drivetrain, limelightshooter));
 
     // Shooter adjustment
-    driver.povUp().onTrue(new SetShooterFixed(shooterpivot, 0.950));
-    driver.povDown().onTrue(new SetShooterFixed(shooterpivot, 0.89));
-    driver.povRight().onTrue(new SetShooterFixed(shooterpivot, 0.93));
+    driver.povUp().onTrue(new SetShooterFixed(shooterpivot, 42));
+
+    //driver.povUp().onTrue(new SetShooterFixed(shooterpivot, 56.93));
+    driver.povDown().onTrue(new SetShooterFixed(shooterpivot, 36.3));
+    //driver.povRight().onTrue(new SetShooterFixed(shooterpivot, 0.93));
+    
     driver.povLeft().whileTrue(new SetShooterPosition(shooterpivot, limelightshooter));
 
     //invert
@@ -76,7 +81,7 @@ public class RobotContainer {
     //Fast and Slow
     driver.x().whileTrue(new FastMode(drivetrain));
     driver.rightTrigger().whileTrue(new SlowMode(drivetrain));
-
+/*
     // Intake wheels manual
     operator.x().whileTrue(intake.IntakeNoteCmd(0.3));
     operator.a().whileTrue(intake.EjectNoteCmd(1));
@@ -88,7 +93,7 @@ public class RobotContainer {
       new Extend(intake)
       .andThen(intake.IntakeNoteCmd(0.5)).until(intake::hasNote)
       .andThen(new Retract(intake)));
-
+*/
     // Shooter Instant
     operator.y().whileTrue(shooter.Shoot(1, 0.95));
     // shooter variable
@@ -97,6 +102,7 @@ public class RobotContainer {
 
     // Shooter Pivot Manual
     operator.povRight().whileTrue(new Down(shooterpivot, 0.1));
+    operator.povLeft().whileTrue(new Up(shooterpivot, 0.1));
   }
 
   public Command getAutonomousCommand() {

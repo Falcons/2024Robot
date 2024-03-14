@@ -24,7 +24,7 @@ public class OneNoteAuto extends SequentialCommandGroup {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new SetShooterFixed(shooterpivot, 0.967).until(() -> shooterpivot.getThruBore() > 0.96),
+      new SetShooterFixed(shooterpivot, 0.967).until(() -> shooterpivot.getThruBore() > 0.95),
       new ParallelCommandGroup(
         new Shoot(shooter, 1, 0.95).withTimeout(3),
         new SequentialCommandGroup(

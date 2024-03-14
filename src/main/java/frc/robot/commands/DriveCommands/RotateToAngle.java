@@ -15,7 +15,7 @@ public class RotateToAngle extends Command {
   public RotateToAngle(Drivetrain drivetrain, double angle) {
     this.drivetrain = drivetrain;
     this.angle = angle;
-    this.pid = new PIDController(0.04, 0.05, 0);
+    this.pid = new PIDController(0.02, 0, 0);
     addRequirements(drivetrain);
   }
 

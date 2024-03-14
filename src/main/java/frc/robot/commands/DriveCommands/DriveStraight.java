@@ -16,7 +16,7 @@ public class DriveStraight extends Command {
   public DriveStraight(Drivetrain drivetrain, double speed) {
     this.drivetrain = drivetrain;
     this.speed = speed;
-    this.pid = new PIDController(0.04, 0.01, 0);
+    this.pid = new PIDController(0.02, 0, 0);
     addRequirements(drivetrain);
   }
 

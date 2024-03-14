@@ -4,18 +4,22 @@
 
 package frc.robot.commands.ShooterCommands;
 
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.ShooterPivot;
 
 public class SetShooterFixed extends Command {
   private final ShooterPivot shooterpivot;
   private final double position;
   private final PIDController pid;
+  private final ArmFeedforward armFF;
   public SetShooterFixed(ShooterPivot shooterpivot, double pos) {
     this.shooterpivot = shooterpivot;
     this.position = pos;
-    this.pid = new PIDController(1.7, 0.04, 0);
+    this.pid = new PIDController(0.1, 0, 0);
+    this.armFF = new ArmFeedforward(0, 0.35, 1.95, 0.02);
     addRequirements(shooterpivot);
   }
 
@@ -30,9 +34,21 @@ public class SetShooterFixed extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double speed = (pid.calculate(shooterpivot.getThruBore(), position));
-    shooterpivot.setSpeed(-speed);
-  }
+    double FFOutput = armFF.calculate(position * ShooterConstants.degreesToRadians, 0);
+    double PIDOutput = pid.calculate(shooterpivot.getDegrees(), position);
+
+    double speed = FFOutput;
+
+    System.out.println(FFOutput + " " + PIDOutput);
+
+    if (shooterpivot.getSoftUpperLimit() && speed > 0 ) {
+      speed = 0;
+    } else if (shooterpivot.getSoftLowerLimit() && speed < 0) {
+      speed = 0;
+    }
+
+    shooterpivot.setVoltage(-speed);
+  } //pid.calculate(shooterpivot.getThruBore(), position)
 
   // Called once the command ends or is interrupted.
   @Override

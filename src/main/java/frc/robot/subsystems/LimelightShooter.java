@@ -8,6 +8,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.LimelightHelpers;
 
 public class LimelightShooter extends SubsystemBase {
   private final NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight-shooter");
@@ -47,7 +48,7 @@ public class LimelightShooter extends SubsystemBase {
   }
 
   public double[] getBotpose() {
-    return getArrayEntry("botpose");
+    return getArrayEntry("botpose_wpiblue");
   }
 
   public double getDistanceSpeaker() {

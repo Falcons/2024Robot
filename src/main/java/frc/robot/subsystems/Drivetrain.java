@@ -10,13 +10,18 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.LimelightHelpers;
 import frc.robot.Constants.DriveConstants;
 
 public class Drivetrain extends SubsystemBase {
@@ -32,6 +37,19 @@ public class Drivetrain extends SubsystemBase {
   private final RelativeEncoder backLeftEncoder = backLeft.getEncoder();
 
   private final DifferentialDrive drive = new DifferentialDrive(frontLeft::set, frontRight::set);
+
+  private final DifferentialDriveOdometry m_odometry;
+  private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(0.683);
+
+  private final DifferentialDrivePoseEstimator poseEstimator = 
+    new DifferentialDrivePoseEstimator(
+      kinematics, 
+      gyro.getRotation2d(), 
+      frontLeftEncoder.getPosition(), 
+      frontRightEncoder.getPosition(), 
+      new Pose2d(),
+      VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
+      VecBuilder.fill(0.5,0.5,Units.degreesToRadians(30)));
 
   public Drivetrain() {
     frontRight.restoreFactoryDefaults();
@@ -52,13 +70,20 @@ public class Drivetrain extends SubsystemBase {
     backRight.follow(frontRight);
     backLeft.follow(frontLeft);
 
-    frontLeftEncoder.setPosition(0);
-    frontRightEncoder.setPosition(0);
+    resetEncoders();
     gyro.setYaw(0);
     
     frontRightEncoder.setPositionConversionFactor(DriveConstants.RevToMetre);
     frontLeftEncoder.setPositionConversionFactor(DriveConstants.RevToMetre);
 
+    m_odometry = new DifferentialDriveOdometry(gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition());
+  }
+
+  public void updateOdometry() {
+    poseEstimator.update(
+      gyro.getRotation2d(), 
+      frontLeftEncoder.getPosition(), 
+      frontRightEncoder.getPosition());
   }
 
   public void setMaxSpeed(double speed) {
@@ -99,6 +124,10 @@ public class Drivetrain extends SubsystemBase {
     backRightEncoder.setPosition(0);
   }
 
+  public double getDistance() {
+    return (frontLeftEncoder.getPosition() + frontRightEncoder.getPosition()) / 2.0;
+  }
+
   public void setSafteyEnabled(boolean state) {
     drive.setSafetyEnabled(state);
   }
@@ -129,16 +158,16 @@ public class Drivetrain extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Gyro Angle", gyro.getYaw().getValueAsDouble());
+    SmartDashboard.putNumber("Gyro Angle", gyro.getAngle());
 
-    SmartDashboard.putNumber("FL", frontLeft.get());
-    SmartDashboard.putNumber("FR", frontRight.get());
-
-    SmartDashboard.putNumber("FL Distance", frontLeftEncoder.getPosition());
-    SmartDashboard.putNumber("FR Distance", frontRightEncoder.getPosition());
+    m_odometry.update(gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition());
   }
 
   public double getAngle() {
     return gyro.getAngle();
+  }
+
+  public Pose2d getPose() {
+    return m_odometry.getPoseMeters();
   }
 }

@@ -21,7 +21,7 @@ public class Intake extends SubsystemBase {
 
   private final SparkAbsoluteEncoder intakeThruBore = pivot.getAbsoluteEncoder();
 
-  private final DigitalInput intakeLimit = new DigitalInput(IntakeConstants.intakeBottomLimit);
+  //private final DigitalInput intakeLimit = new DigitalInput(IntakeConstants.intakeBottomLimit);
 
   private final TimeOfFlight tof = new TimeOfFlight(0);
 
@@ -78,7 +78,6 @@ public class Intake extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Intake Thru Bore", intakeThruBore.getPosition());
-    SmartDashboard.putBoolean("Intake Limit", intakeLimit.get());
     SmartDashboard.putNumber("TOF", tof.getRange());
     SmartDashboard.putBoolean("Has Note", hasNote());
     SmartDashboard.putString("Intake", getRetractedorExtended());

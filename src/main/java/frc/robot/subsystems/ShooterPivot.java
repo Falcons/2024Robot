@@ -25,8 +25,7 @@ public class ShooterPivot extends SubsystemBase {
   TreeMap<Double, Double> shooterPivotMap = new TreeMap<Double, Double>();
 
   public ShooterPivot() {
-    //thruBore.setZeroOffset(ShooterConstants.thruBoreZeroOffset);
-    thruBore.setPositionConversionFactor(1);
+    pivot.restoreFactoryDefaults();
     setShooterPivotMap();
     setBrakeMode();
   }
@@ -52,7 +51,7 @@ public class ShooterPivot extends SubsystemBase {
   public double getHashValue(double key) {
     return shooterPivotMap.get(key);
   }
-
+/*
   public double findDistance (double pos){
     double prevdiff = 0;
     double prevpos = 0;
@@ -81,7 +80,7 @@ public class ShooterPivot extends SubsystemBase {
     }
     else return pos;
   }
-
+*/
   public double returnClosest(double distance) {
     Double minDiff = Double.MAX_VALUE;
     Double nearest = null;
@@ -94,6 +93,7 @@ public class ShooterPivot extends SubsystemBase {
     }
     return nearest;
   }
+
   public TreeMap<Double, Double> getShooterMap() {
     return shooterPivotMap;
   }
@@ -118,6 +118,10 @@ public class ShooterPivot extends SubsystemBase {
     return thruBore.getPosition();
   }
 
+  public double getDegrees() {
+    return thruBore.getPosition() * 360 - 285.07;
+  }
+
   public boolean getSoftUpperLimit() {
     return (thruBore.getPosition() > ShooterConstants.pivotUpperLimit);
   }
@@ -132,12 +136,13 @@ public class ShooterPivot extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Pivot Encoder", thruBore.getPosition());
-    SmartDashboard.putNumber("Pivot Speed", pivot.get());
+    SmartDashboard.putNumber("Pivot Raw", thruBore.getPosition());
+    SmartDashboard.putNumber("Pivot Degrees", thruBore.getPosition() * 360 - 285.07);
+    SmartDashboard.putNumber("Pivot Output", pivot.getAppliedOutput());
 
-    SmartDashboard.putBoolean("Pivot Limit Switch", getPivotLimit());
-    SmartDashboard.putBoolean("Soft Limit Enabled", getSoftUpperLimit());
-    SmartDashboard.putNumber("Pivot Mode", pivot.getIdleMode().value);
+    SmartDashboard.putBoolean("Upper Pivot Soft", getSoftUpperLimit());
+    SmartDashboard.putBoolean("Lower Pivot Soft", getSoftLowerLimit());
+    //SmartDashboard.putNumber("Pivot Mode", pivot.getIdleMode().value);
   }
 
   public Command Up(double speed) {
