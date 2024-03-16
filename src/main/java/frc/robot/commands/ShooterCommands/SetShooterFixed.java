@@ -37,7 +37,7 @@ public class SetShooterFixed extends Command {
     double FFOutput = armFF.calculate(position * ShooterConstants.degreesToRadians, 0);
     double PIDOutput = pid.calculate(shooterpivot.getDegrees(), position);
 
-    double speed = FFOutput;
+    double speed = FFOutput + PIDOutput;
 
     System.out.println(FFOutput + " " + PIDOutput);
 

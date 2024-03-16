@@ -7,6 +7,7 @@ package frc.robot.commands.ShooterCommands;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.ShooterPivot;
@@ -20,8 +21,9 @@ public class SetShooterTwoPID extends Command {
   public SetShooterTwoPID(ShooterPivot shooterpivot, double pos) {
     this.shooterpivot = shooterpivot;
     this.position = pos;
-    this.pidToSetpoint = new PIDController(0.1, 0, 0);
-    this.pidFixed = new PIDController(0.5, 0, 0);
+    this.pidToSetpoint = new PIDController(0.2, 0, 0);
+
+    this.pidFixed = new PIDController(0.4, 0.01, 0);
     this.armFF = new ArmFeedforward(0, 0.35, 1.95, 0.02);
     addRequirements(shooterpivot);
   }
@@ -34,7 +36,8 @@ public class SetShooterTwoPID extends Command {
     pidToSetpoint.reset();
     pidFixed.reset();
     pidToSetpoint.setSetpoint(position);
-    pidToSetpoint.setTolerance(0.5);
+    pidToSetpoint.setTolerance(1);
+    pidFixed.setTolerance(0.1);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -48,7 +51,7 @@ public class SetShooterTwoPID extends Command {
     if (pidToSetpoint.atSetpoint()) {
       speed = PIDFixedOutput;
     } else {
-      speed = PIDToSetpointOutput + FFOutput;
+      speed = PIDToSetpointOutput;
     }
 
     if (shooterpivot.getSoftUpperLimit() && speed > 0 ) {
@@ -58,6 +61,8 @@ public class SetShooterTwoPID extends Command {
     }
 
     shooterpivot.setVoltage(-speed);
+    SmartDashboard.putBoolean("At Setpoint", pidToSetpoint.atSetpoint());
+    SmartDashboard.putNumber("Error", pidToSetpoint.getPositionError());
   }
 
   // Called once the command ends or is interrupted.

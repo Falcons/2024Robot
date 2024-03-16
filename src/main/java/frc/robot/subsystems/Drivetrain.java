@@ -74,9 +74,21 @@ public class Drivetrain extends SubsystemBase {
     gyro.setYaw(0);
     
     frontRightEncoder.setPositionConversionFactor(DriveConstants.RevToMetre);
+    backRightEncoder.setPositionConversionFactor(DriveConstants.RevToMetre);
     frontLeftEncoder.setPositionConversionFactor(DriveConstants.RevToMetre);
+    backLeftEncoder.setPositionConversionFactor(DriveConstants.RevToMetre);
 
     m_odometry = new DifferentialDriveOdometry(gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition());
+  }
+
+  public void FastMode() {
+    setCoastMode();
+    drive.setMaxOutput(1);
+  }
+
+  public void SlowMode() {
+    setBrakeMode();
+    drive.setMaxOutput(0.3);
   }
 
   public void updateOdometry() {
@@ -84,6 +96,12 @@ public class Drivetrain extends SubsystemBase {
       gyro.getRotation2d(), 
       frontLeftEncoder.getPosition(), 
       frontRightEncoder.getPosition());
+
+    LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-shooter");
+    if (limelightMeasurement.tagCount >= 2) {
+      poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
+      poseEstimator.addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
+    }
   }
 
   public void setMaxSpeed(double speed) {
@@ -160,7 +178,7 @@ public class Drivetrain extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putNumber("Gyro Angle", gyro.getAngle());
 
-    m_odometry.update(gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition());
+    updateOdometry();
   }
 
   public double getAngle() {

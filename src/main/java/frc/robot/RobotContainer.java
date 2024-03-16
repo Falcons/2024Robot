@@ -5,9 +5,13 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.commands.AutoCommands.OneNoteAuto;
+import frc.robot.commands.AutoCommands.TwoNoteAuto;
 import frc.robot.commands.ClimbCommands.ClimbUp;
 import frc.robot.commands.DriveCommands.ArcadeDriveCmd;
 import frc.robot.commands.DriveCommands.CentretoNote;
@@ -22,6 +26,7 @@ import frc.robot.commands.IntakeCommands.Retract;
 import frc.robot.commands.ShooterCommands.Down;
 import frc.robot.commands.ShooterCommands.SetShooterFixed;
 import frc.robot.commands.ShooterCommands.SetShooterPosition;
+import frc.robot.commands.ShooterCommands.SetShooterTwoPID;
 import frc.robot.commands.ShooterCommands.Shoot;
 import frc.robot.commands.ShooterCommands.Up;
 import frc.robot.subsystems.Climb;
@@ -67,7 +72,9 @@ public class RobotContainer {
     driver.rightBumper().whileTrue(new CentretoSpeaker(drivetrain, limelightshooter));
 
     // Shooter adjustment
-    driver.povUp().onTrue(new SetShooterFixed(shooterpivot, 42));
+    driver.povUp().onTrue(new SetShooterTwoPID(shooterpivot, 42));
+    //driver.povUp().onTrue(new SetShooterTwoPID(shooterpivot, 56.93));
+
 
     //driver.povUp().onTrue(new SetShooterFixed(shooterpivot, 56.93));
     driver.povDown().onTrue(new SetShooterFixed(shooterpivot, 36.3));
@@ -79,9 +86,12 @@ public class RobotContainer {
     driver.a().whileTrue(new InvertDrive(drivetrain));
 
     //Fast and Slow
-    driver.x().whileTrue(new FastMode(drivetrain));
-    driver.rightTrigger().whileTrue(new SlowMode(drivetrain));
-/*
+    //driver.x().whileTrue(new FastMode(drivetrain));
+    //driver.rightTrigger().whileTrue(new SlowMode(drivetrain));
+    driver.x().onTrue(new InstantCommand(drivetrain::FastMode));
+    driver.rightTrigger().onTrue(new InstantCommand(drivetrain::SlowMode));
+    
+
     // Intake wheels manual
     operator.x().whileTrue(intake.IntakeNoteCmd(0.3));
     operator.a().whileTrue(intake.EjectNoteCmd(1));
@@ -91,9 +101,9 @@ public class RobotContainer {
     //Extend -> Intake -> Retract
     operator.rightBumper().onTrue(
       new Extend(intake)
-      .andThen(intake.IntakeNoteCmd(0.5)).until(intake::hasNote)
+      .andThen(intake.IntakeNoteCmd(IntakeConstants.intakeSpeed)).until(intake::hasNote)
       .andThen(new Retract(intake)));
-*/
+
     // Shooter Instant
     operator.y().whileTrue(shooter.Shoot(1, 0.95));
     // shooter variable
@@ -103,9 +113,27 @@ public class RobotContainer {
     // Shooter Pivot Manual
     operator.povRight().whileTrue(new Down(shooterpivot, 0.1));
     operator.povLeft().whileTrue(new Up(shooterpivot, 0.1));
+/*
+    //Shooter Characterization
+    operator.a().and(operator.rightBumper())
+      .onTrue(shooterpivot.sysIdQuasistatic(Direction.kForward)
+      .until(shooterpivot::getSoftLowerLimit));
+
+    operator.b().and(operator.rightBumper())
+      .onTrue(shooterpivot.sysIdQuasistatic(Direction.kReverse)
+      .until(shooterpivot::getSoftUpperLimit));
+
+    operator.x().and(operator.rightBumper())
+      .onTrue(shooterpivot.sysIdDynamic(Direction.kForward)
+      .until(shooterpivot::getSoftLowerLimit));
+
+    operator.y().and(operator.rightBumper())
+      .onTrue(shooterpivot.sysIdDynamic(Direction.kReverse)
+      .until(shooterpivot::getSoftUpperLimit));
+*/
   }
 
   public Command getAutonomousCommand() {
-    return new OneNoteAuto(drivetrain, intake, shooter, shooterpivot);
+    return new TwoNoteAuto(drivetrain, intake, shooter, shooterpivot);
   }
 }

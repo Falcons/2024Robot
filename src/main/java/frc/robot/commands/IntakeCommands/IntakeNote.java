@@ -10,23 +10,16 @@ import frc.robot.subsystems.Intake;
 
 public class IntakeNote extends Command {
   public Intake intake;
-  public Timer timer;
   public double speed;
-  public double time;
 
-  public IntakeNote(Intake intake, double speed, double time) {
+  public IntakeNote(Intake intake, double speed) {
     this.intake = intake;
-    this.timer = new Timer();
     this.speed = speed;
-    this.time = time;
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {
-    timer.reset();
-    timer.start();
-  }
+  public void initialize() {}
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
@@ -43,6 +36,6 @@ public class IntakeNote extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return timer.get() > time;
+    return false;
   }
 }

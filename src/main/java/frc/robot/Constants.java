@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+
 public final class Constants {
     public static final class DriveConstants {
         public static final int frontRightID = 2;
@@ -23,26 +25,40 @@ public final class Constants {
         public static final int pivotID = 10;
         public static final int wheelID = 11;
 
-        public static final double intakeOutAngle = 0.07;
-        public static final double intakeInAngle = 0.66;
+        public static final double intakeOutAngle = 0.08;
+        public static final double intakeInAngle = 0.657;
 
         public static final int intakeBottomLimit = 3;
+
+        public static final double intakeSpeed = 0.5;
     }
 
     public static final class ShooterConstants {
         public static final int leftFlywheelID = 6;
         public static final int rightFlywheelID = 5;
         public static final int pivotID = 7;
+
         public static final int pivotBottomLimitPort = 0;
 
         public static final double speakerDepth = 0.89;
 
-        public static final double pivotUpperLimit = 0.944;
-        public static final double pivotLowerLimit = 0.893;
-
-        public static final double thruBoreRawToDegrees = 360;
+        public static final double pivotUpperLimit = 54.77; //raw: 0.944
+        public static final double pivotLowerLimit = 36.41; //raw: 0.893
 
         public static final double degreesToRadians = Math.PI / 180.0;
+        public static final double rotationsToDegrees = 360;
+        public static final Rotation2d pivotZeroOffset = Rotation2d.fromDegrees(285.07);
+
+        public static final double kP = 0;
+        public static final double kI = 0;
+        public static final double kD = 0;
+
+        public static final double kS = 0;
+        public static final double kG = 0;
+        public static final double kV = 0;
+
+        public static final double maxSpeed = 0;
+        public static final double maxAccel = 0;
     }
 
     public static final class ClimbConstants {
