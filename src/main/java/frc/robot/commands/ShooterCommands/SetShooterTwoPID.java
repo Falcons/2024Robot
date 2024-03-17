@@ -43,15 +43,19 @@ public class SetShooterTwoPID extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double FFOutput = armFF.calculate(position * ShooterConstants.degreesToRadians, 0);
-    double PIDToSetpointOutput = pidToSetpoint.calculate(shooterpivot.getDegrees(), position);
-    double PIDFixedOutput = pidFixed.calculate(shooterpivot.getDegrees(), position);
+    double FFOutput = armFF.calculate(42 * ShooterConstants.degreesToRadians, 0);
+    double PIDToSetpointOutput = pidToSetpoint.calculate(shooterpivot.getDegreesFromRaw(), position);
+    double PIDFixedOutput = pidFixed.calculate(shooterpivot.getDegreesFromRaw(), position);
     double speed;
 
     if (pidToSetpoint.atSetpoint()) {
-      speed = PIDFixedOutput;
-    } else {
       speed = PIDToSetpointOutput;
+    } else {
+      if (pidToSetpoint.getPositionError() < 0) {
+        speed = PIDToSetpointOutput / 10.0;
+      } else {
+        speed = PIDToSetpointOutput;
+      }
     }
 
     if (shooterpivot.getSoftUpperLimit() && speed > 0 ) {
@@ -59,8 +63,8 @@ public class SetShooterTwoPID extends Command {
     } else if (shooterpivot.getSoftLowerLimit() && speed < 0) {
       speed = 0;
     }
-
     shooterpivot.setVoltage(-speed);
+
     SmartDashboard.putBoolean("At Setpoint", pidToSetpoint.atSetpoint());
     SmartDashboard.putNumber("Error", pidToSetpoint.getPositionError());
   }
@@ -74,6 +78,6 @@ public class SetShooterTwoPID extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return shooterpivot.getSoftUpperLimit();
+    return false;
   }
 }

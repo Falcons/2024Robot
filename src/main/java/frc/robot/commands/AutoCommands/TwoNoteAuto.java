@@ -31,14 +31,14 @@ public class TwoNoteAuto extends SequentialCommandGroup {
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
       //initial shooting
-      new SetShooterTwoPID(shooterpivot, 56.93).until(() -> shooterpivot.getDegrees() > 56),
+      new SetShooterTwoPID(shooterpivot, 56.93).until(() -> shooterpivot.getDegreesFromRaw() > 56),
       new ParallelCommandGroup(
         new Shoot(shooter, 1, 0.95).withTimeout(3),
         new SequentialCommandGroup(
           new WaitCommand(2), 
           new EjectNote(intake, 1).withTimeout(2))
           ),
-      new SetShooterTwoPID(shooterpivot, 37).until(() -> shooterpivot.getDegrees() < 38),
+      new SetShooterTwoPID(shooterpivot, 37).until(() -> shooterpivot.getDegreesFromRaw() < 38),
 
       //drive and pickup note in front
       new Extend(intake),

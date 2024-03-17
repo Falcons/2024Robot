@@ -21,8 +21,8 @@ public class SetShooterPosition extends Command {
   public SetShooterPosition(ShooterPivot shooterpivot, LimelightShooter ls) {
     this.shooterpivot = shooterpivot;
     this.limelightshooter = ls;
-    this.pos = shooterpivot.returnClosest(Units.inchesToMeters(limelightshooter.getDistanceSpeaker()) - ShooterConstants.speakerDepth);
-    this.pid = new PIDController(1, 0, 0);
+    this.pos = shooterpivot.returnClosest(limelightshooter.getDistanceSpeaker());
+    this.pid = new PIDController(0.2, 0, 0); //P: 1.2
     addRequirements(shooterpivot, limelightshooter);
   }
 
@@ -37,11 +37,26 @@ public class SetShooterPosition extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    pos = shooterpivot.returnClosest(Units.inchesToMeters(limelightshooter.getDistanceSpeaker()) - ShooterConstants.speakerDepth);
-    double angle = shooterpivot.getHashValue(pos);
+    double speed;
+    double angle = -0.00105 * limelightshooter.getDistanceSpeaker() + 0.978;
+    angle = shooterpivot.rawToDegrees(angle);
+    System.out.println("Angle: " + angle);
 
-    double speed = (pid.calculate(shooterpivot.getThruBore(), angle));
-    shooterpivot.setSpeed(-speed);
+    double PIDOutput = pid.calculate(shooterpivot.getDegreesFromRaw(), angle);
+
+    
+      if (pid.getPositionError() < 0) {
+        speed = PIDOutput / 10.0;
+      } else {
+        speed = PIDOutput;
+      }
+
+    //shooterpivot.returnClosest(limelightshooter.getDistanceSpeaker());
+    //pos = shooterpivot.returnClosest(Units.inchesToMeters(limelightshooter.getDistanceSpeaker()) - ShooterConstants.speakerDepth);
+    //double angle = shooterpivot.getHashValue(pos);
+
+    //speed = (pid.calculate(shooterpivot.getThruBore(), angle));
+    shooterpivot.setVoltage(-speed);
   }
 
   // Called once the command ends or is interrupted.

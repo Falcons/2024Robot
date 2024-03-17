@@ -42,11 +42,14 @@ public final class Constants {
 
         public static final double speakerDepth = 0.89;
 
-        public static final double pivotUpperLimit = 54.77; //raw: 0.944
-        public static final double pivotLowerLimit = 36.41; //raw: 0.893
+        //public static final double pivotUpperLimit = 54.77; //raw: 0.944
+        public static final Rotation2d pivotUpperLimit = Rotation2d.fromDegrees(57.6);
+        //public static final double pivotLowerLimit = 36.41; //raw: 0.893
+        public static final Rotation2d pivotLowerLimit = Rotation2d.fromDegrees(36.32);
 
         public static final double degreesToRadians = Math.PI / 180.0;
         public static final double rotationsToDegrees = 360;
+        public static final double rotationsToRadians = 2 * Math.PI;
         public static final Rotation2d pivotZeroOffset = Rotation2d.fromDegrees(285.07);
 
         public static final double kP = 0;

@@ -66,6 +66,13 @@ public class RobotContainer {
 
   private void configureBindings() {
     shooterpivot.stopShooterPivot();
+/*
+    //Wheel Testing
+    driver.a().whileTrue(drivetrain.runFrontLeft());
+    driver.b().whileTrue(drivetrain.runBackLeft());
+    driver.x().whileTrue(drivetrain.runFrontRight());
+    driver.y().whileTrue(drivetrain.runBackRight());
+*/
 
     // Centring
     driver.leftBumper().whileTrue(new CentretoNote(drivetrain, limelightintake));

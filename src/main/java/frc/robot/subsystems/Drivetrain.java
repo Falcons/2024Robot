@@ -70,6 +70,8 @@ public class Drivetrain extends SubsystemBase {
     backRight.follow(frontRight);
     backLeft.follow(frontLeft);
 
+    setCoastMode();
+
     resetEncoders();
     gyro.setYaw(0);
     
@@ -157,7 +159,7 @@ public class Drivetrain extends SubsystemBase {
   public void setYaw(double value) {
     gyro.setYaw(value);
   }
-
+/*
   public void arcadeDriveManual(double speed, double rotation) {
     if (speed < 0.1 && speed > -0.1) {
       speed = 0;
@@ -169,13 +171,18 @@ public class Drivetrain extends SubsystemBase {
       frontLeft.set(speed + rotation);
       frontRight.set(speed - rotation);
   }
-
+*/
   public void arcadeDrive(double speed, double rotation) {
     drive.arcadeDrive(speed, rotation);
   }
 
   @Override
   public void periodic() {
+    SmartDashboard.putNumber("Left Speed", frontLeft.get());
+    SmartDashboard.putNumber("Right Speed", frontRight.get());
+
+    SmartDashboard.putNumber("Left Drive Encoder", frontLeftEncoder.getPosition());
+    SmartDashboard.putNumber("Right Drive Encoder", frontRightEncoder.getPosition());
     SmartDashboard.putNumber("Gyro Angle", gyro.getAngle());
 
     updateOdometry();
@@ -188,4 +195,21 @@ public class Drivetrain extends SubsystemBase {
   public Pose2d getPose() {
     return m_odometry.getPoseMeters();
   }
+
+  public Command runFrontLeft() {
+    return this.startEnd(() -> frontLeft.set(0.3), () -> frontLeft.stopMotor());
+  }
+
+  public Command runBackLeft() {
+    return this.startEnd(() -> backLeft.set(0.3), () -> backLeft.stopMotor());
+  }
+
+  public Command runFrontRight() {
+    return this.startEnd(() -> frontRight.set(0.3), () -> frontRight.stopMotor());
+  }
+
+  public Command runBackRight() {
+    return this.startEnd(() -> backRight.set(0.3), () -> backRight.stopMotor());
+  }
+  
 }

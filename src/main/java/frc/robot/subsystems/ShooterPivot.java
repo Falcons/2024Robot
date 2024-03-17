@@ -66,11 +66,12 @@ public class ShooterPivot extends SubsystemBase {
     pivot = new CANSparkMax(ShooterConstants.pivotID,  MotorType.kBrushless);
     pivot.restoreFactoryDefaults();
     pivot.setIdleMode(IdleMode.kBrake);
+    pivot.setSmartCurrentLimit(40);
 
     thruBore = pivot.getAbsoluteEncoder();
-    thruBore.setPositionConversionFactor(ShooterConstants.rotationsToDegrees);
-    thruBore.setVelocityConversionFactor(ShooterConstants.rotationsToDegrees / 60.0);
-    thruBore.setZeroOffset(ShooterConstants.pivotZeroOffset.getDegrees());
+    //thruBore.setPositionConversionFactor(ShooterConstants.rotationsToRadians);
+    //thruBore.setVelocityConversionFactor(ShooterConstants.rotationsToRadians / 60.0);
+    //thruBore.setZeroOffset(ShooterConstants.pivotZeroOffset.getRadians());
 
     pivotPID = pivot.getPIDController();
     pivotPID.setP(ShooterConstants.kP);
@@ -85,8 +86,8 @@ public class ShooterPivot extends SubsystemBase {
         ShooterConstants.maxSpeed, 
         ShooterConstants.maxAccel));
     
-    pivotGoal = Rotation2d.fromDegrees(ShooterConstants.pivotLowerLimit);
-    pivotStart = new TrapezoidProfile.State(getThruBore(), 0);
+    pivotGoal = ShooterConstants.pivotLowerLimit;
+    pivotStart = new TrapezoidProfile.State(ShooterConstants.pivotLowerLimit.getRadians(), 0);
     lastPivotVelocitySetpoint = 0;
 
     pivotFF = new ArmFeedforward(
@@ -147,6 +148,12 @@ public class ShooterPivot extends SubsystemBase {
     shooterPivotMap.put(89.8, 0.894); //0.894
   }
 
+  public double getRadiansFromRaw() {
+    return thruBore.getPosition() * 2 * Math.PI - 4.9754;
+  }
+  public double getDegreesFromRaw() {
+    return thruBore.getPosition() * 360 - 285.07;
+  }
   public double rawToDegrees(double raw) {
     return raw * 360 - 285.07;
   }
@@ -173,11 +180,13 @@ public class ShooterPivot extends SubsystemBase {
   }
 
   public void setPivotAngle(Rotation2d angle) {
-    pivotGoal = angle;
-    pivotStart = new TrapezoidProfile.State(getThruBore(), getThruBore() / 60.0);
-    timer.stop();
-    timer.reset();
-    timer.start();
+    if (angle.getRadians() != pivotGoal.getRadians()) {
+      pivotGoal = angle;
+      pivotStart = new TrapezoidProfile.State(thruBore.getPosition(), thruBore.getVelocity());
+      timer.stop();
+      timer.reset();
+      timer.start();
+    }
   }
 
   public void setSpeed(double speed) {
@@ -200,16 +209,12 @@ public class ShooterPivot extends SubsystemBase {
     return thruBore.getPosition();
   }
 
-  public double getDegrees() {
-    return thruBore.getPosition() * 360 - 285.07;
-  }
-
   public boolean getSoftUpperLimit() {
-    return (thruBore.getPosition() > ShooterConstants.pivotUpperLimit);
+    return (getDegreesFromRaw() > ShooterConstants.pivotUpperLimit.getDegrees());
   }
 
   public boolean getSoftLowerLimit() {
-    return (thruBore.getPosition() < ShooterConstants.pivotLowerLimit);
+    return (getDegreesFromRaw() < ShooterConstants.pivotLowerLimit.getDegrees());
   }
 
   public void setBrakeMode() {
@@ -218,6 +223,11 @@ public class ShooterPivot extends SubsystemBase {
 
   @Override
   public void periodic() {
+
+    if (pivotGoal.getRadians() >= ShooterConstants.pivotUpperLimit.getRadians()) {
+      pivotGoal = ShooterConstants.pivotUpperLimit;
+    }
+
     pivotSetpoint = pivotProfile.calculate(
       timer.get(), 
       pivotStart, 
@@ -227,7 +237,7 @@ public class ShooterPivot extends SubsystemBase {
     //pivotPID.setReference(pivotSetpoint.position, ControlType.kPosition, 0, pivotFFValue, ArbFFUnits.kVoltage);
 
     SmartDashboard.putNumber("Pivot Raw", thruBore.getPosition());
-    SmartDashboard.putNumber("Pivot Degrees", thruBore.getPosition() * 360 - 285.07);
+    SmartDashboard.putNumber("Pivot Degrees", getDegreesFromRaw());
     SmartDashboard.putNumber("Pivot Output", pivot.getAppliedOutput());
 
     SmartDashboard.putBoolean("Upper Pivot Soft", getSoftUpperLimit());
