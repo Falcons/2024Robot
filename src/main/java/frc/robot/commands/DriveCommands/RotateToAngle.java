@@ -23,6 +23,7 @@ public class RotateToAngle extends Command {
   @Override
   public void initialize() {
     System.out.println("RotateToAngle Start");
+    drivetrain.setYaw(0);
     pid.reset();
   }
 

@@ -14,10 +14,12 @@ import frc.robot.commands.IntakeCommands.Extend;
 import frc.robot.commands.IntakeCommands.IntakeNote;
 import frc.robot.commands.IntakeCommands.Retract;
 import frc.robot.commands.ShooterCommands.SetShooterFixed;
+import frc.robot.commands.ShooterCommands.SetShooterPosition;
 import frc.robot.commands.ShooterCommands.SetShooterTwoPID;
 import frc.robot.commands.ShooterCommands.Shoot;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.LimelightShooter;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.ShooterPivot;
 
@@ -26,7 +28,7 @@ import frc.robot.subsystems.ShooterPivot;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class TwoNoteAuto extends SequentialCommandGroup {
   /** Creates a new TwoNoteAuto. */
-  public TwoNoteAuto(Drivetrain drivetrain, Intake intake, Shooter shooter, ShooterPivot shooterpivot) {
+  public TwoNoteAuto(Drivetrain drivetrain, Intake intake, Shooter shooter, ShooterPivot shooterpivot, LimelightShooter ls) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
@@ -36,22 +38,23 @@ public class TwoNoteAuto extends SequentialCommandGroup {
         new Shoot(shooter, 1, 0.95).withTimeout(3),
         new SequentialCommandGroup(
           new WaitCommand(2), 
-          new EjectNote(intake, 1).withTimeout(2))
+          new EjectNote(intake, 1).withTimeout(1))
           ),
-      new SetShooterTwoPID(shooterpivot, 37).until(() -> shooterpivot.getDegreesFromRaw() < 38),
+      new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegreesFromRaw() < 38),
 
       //drive and pickup note in front
       new Extend(intake),
       new ParallelCommandGroup(
         new DriveStraight(drivetrain, 0.45),
-        new IntakeNote(intake, IntakeConstants.intakeSpeed)
+        new IntakeNote(intake, IntakeConstants.intakeSpeed),
+        new SetShooterTwoPID(shooterpivot, 36.4)
       ).until(intake::hasNote),
       new Retract(intake),
 
       //drive back turn on shooter
       new ParallelCommandGroup(
         new DriveStraight(drivetrain, -0.45),
-        new SetShooterTwoPID(shooterpivot, 56.93)
+        new SetShooterPosition(shooterpivot, ls)//SetShooterTwoPID(shooterpivot, shooterpivot.rawToDegrees(0.909))
       ).until(() -> drivetrain.getDistance() <= 0),
       new ParallelCommandGroup(
         new Shoot(shooter, 1, 0.95).withTimeout(3),

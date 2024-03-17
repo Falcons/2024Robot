@@ -16,7 +16,7 @@ public class CentretoSpeaker extends Command {
   public CentretoSpeaker(Drivetrain d, LimelightShooter ls) {
     this.drivetrain = d;
     this.limelightShooter = ls;
-    this.pid = new PIDController(0.04, 0.01, 0);
+    this.pid = new PIDController(0.032, 0.018, 0);
     addRequirements(drivetrain, limelightShooter);
   }
 
@@ -24,16 +24,16 @@ public class CentretoSpeaker extends Command {
   @Override
   public void initialize() {
     System.out.println("CentreToSpeaker Start");
-    //limelightShooter.setDoubleEntry("priorityid", 7);
-    //System.out.println(limelightShooter.getDoubleEntry("priorityid"));
+    limelightShooter.setDoubleEntry("priorityid", 7);
     pid.reset();
+    pid.setTolerance(1);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double leftSpeed = pid.calculate(limelightShooter.getX(), 0);
-    double rightSpeed = -pid.calculate(limelightShooter.getX(), 0);
+    double leftSpeed = -pid.calculate(limelightShooter.getX(), 0);
+    double rightSpeed = pid.calculate(limelightShooter.getX(), 0);
 
     drivetrain.tankDrive(leftSpeed, rightSpeed);
   }

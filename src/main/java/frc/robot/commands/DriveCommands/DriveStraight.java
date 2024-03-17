@@ -41,6 +41,7 @@ public class DriveStraight extends Command {
   @Override
   public void end(boolean interrupted) {
     drivetrain.tankDrive(0, 0);
+    drivetrain.stopMotors();
     System.out.println("DriveStraight End");
   }
 

@@ -32,6 +32,7 @@ public class SetShooterPosition extends Command {
   public void initialize() {
     System.out.println(pos);
     pid.reset();
+    limelightshooter.setDoubleEntry("priorityid", 7);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

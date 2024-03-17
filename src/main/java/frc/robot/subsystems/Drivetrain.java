@@ -183,6 +183,7 @@ public class Drivetrain extends SubsystemBase {
 
     SmartDashboard.putNumber("Left Drive Encoder", frontLeftEncoder.getPosition());
     SmartDashboard.putNumber("Right Drive Encoder", frontRightEncoder.getPosition());
+    SmartDashboard.putNumber("Distance", getDistance());
     SmartDashboard.putNumber("Gyro Angle", gyro.getAngle());
 
     updateOdometry();

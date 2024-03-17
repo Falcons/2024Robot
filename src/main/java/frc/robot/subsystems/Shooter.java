@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
@@ -30,7 +31,11 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    double leftSpeed = leftFlywheel.getVelocity().getValueAsDouble();
+    double rightSpeed = rightFlywheel.getVelocity().getValueAsDouble();
+    SmartDashboard.putNumber("Left Shooter Speed", leftSpeed);
+    SmartDashboard.putNumber("Right Shooter Speed", rightSpeed);
+    SmartDashboard.putBoolean("Shoot", leftSpeed > 90 && rightSpeed > 90);
   }
 
   public Command Shoot(double leftSpeed, double rightSpeed) {

@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.commands.AutoCommands.OneNoteAuto;
+import frc.robot.commands.AutoCommands.BlueAmpSideOneNote;
+import frc.robot.commands.AutoCommands.BlueAmpSideTwoNote;
 import frc.robot.commands.AutoCommands.TwoNoteAuto;
 import frc.robot.commands.ClimbCommands.ClimbUp;
 import frc.robot.commands.DriveCommands.ArcadeDriveCmd;
@@ -75,7 +77,7 @@ public class RobotContainer {
 */
 
     // Centring
-    driver.leftBumper().whileTrue(new CentretoNote(drivetrain, limelightintake));
+    driver.leftBumper().onTrue(new CentretoNote(drivetrain, limelightintake));
     driver.rightBumper().whileTrue(new CentretoSpeaker(drivetrain, limelightshooter));
 
     // Shooter adjustment
@@ -91,6 +93,8 @@ public class RobotContainer {
 
     //invert
     driver.a().whileTrue(new InvertDrive(drivetrain));
+    //reset encoder
+    driver.b().onTrue(new InstantCommand(drivetrain::resetEncoders).ignoringDisable(true));
 
     //Fast and Slow
     //driver.x().whileTrue(new FastMode(drivetrain));
@@ -141,6 +145,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return new TwoNoteAuto(drivetrain, intake, shooter, shooterpivot);
+    return new BlueAmpSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake);
+    //new TwoNoteAuto(drivetrain, intake, shooter, shooterpivot, limelightshooter);
   }
 }

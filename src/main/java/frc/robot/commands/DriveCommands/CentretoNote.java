@@ -17,7 +17,7 @@ public class CentretoNote extends Command {
   public CentretoNote(Drivetrain d, LimelightIntake li) {
     this.drivetrain = d;
     this.limelightIntake = li;
-    this.pid = new PIDController(0.04, 0.01, 0);
+    this.pid = new PIDController(0.042, 0.03, 0);
     addRequirements(drivetrain, limelightIntake);
   }
 
@@ -26,14 +26,15 @@ public class CentretoNote extends Command {
   public void initialize() {
     System.out.println("CentreToNote Start");
     pid.reset();
+    pid.setTolerance(1.3);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    double leftSpeed = -pid.calculate(limelightIntake.getX(), 0);
+    double rightSpeed = pid.calculate(limelightIntake.getX(), 0);
     SmartDashboard.putNumber("Note Error", pid.getPositionError());
-    double leftSpeed = pid.calculate(limelightIntake.getX(), 0);
-    double rightSpeed = -pid.calculate(limelightIntake.getX(), 0);
 
     drivetrain.tankDrive(leftSpeed, rightSpeed);
   }
