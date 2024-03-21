@@ -100,7 +100,7 @@ public class ShooterPivot extends SubsystemBase {
     pivot.burnFlash();
 
     timer = new Timer();
-    timer.start();
+    //timer.start();
 
     pivotCharacterizer = 
       new SysIdRoutine(
@@ -127,7 +127,7 @@ public class ShooterPivot extends SubsystemBase {
               // WPILog with this subsystem's name ("shooter")
               this));
 
-    setShooterPivotMap();
+    //setShooterPivotMap();
   }
   
   public void setShooterPivotMap() {
@@ -223,7 +223,7 @@ public class ShooterPivot extends SubsystemBase {
 
   @Override
   public void periodic() {
-
+/*
     if (pivotGoal.getRadians() >= ShooterConstants.pivotUpperLimit.getRadians()) {
       pivotGoal = ShooterConstants.pivotUpperLimit;
     }
@@ -235,7 +235,7 @@ public class ShooterPivot extends SubsystemBase {
     
     pivotFFValue = pivotFF.calculate(pivotSetpoint.position, pivotSetpoint.velocity);
     //pivotPID.setReference(pivotSetpoint.position, ControlType.kPosition, 0, pivotFFValue, ArbFFUnits.kVoltage);
-
+*/
     SmartDashboard.putNumber("Pivot Raw", thruBore.getPosition());
     SmartDashboard.putNumber("Pivot Degrees", getDegreesFromRaw());
     SmartDashboard.putNumber("Pivot Output", pivot.getAppliedOutput());

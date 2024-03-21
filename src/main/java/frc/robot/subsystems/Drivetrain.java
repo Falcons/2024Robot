@@ -70,6 +70,16 @@ public class Drivetrain extends SubsystemBase {
     backRight.follow(frontRight);
     backLeft.follow(frontLeft);
 
+    frontLeft.setSmartCurrentLimit(40);
+    backLeft.setSmartCurrentLimit(40);
+    frontRight.setSmartCurrentLimit(40);
+    backRight.setSmartCurrentLimit(40);
+
+    frontLeft.burnFlash();
+    backLeft.burnFlash();
+    frontRight.burnFlash();
+    backRight.burnFlash();
+
     setCoastMode();
 
     resetEncoders();
@@ -178,15 +188,12 @@ public class Drivetrain extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Left Speed", frontLeft.get());
-    SmartDashboard.putNumber("Right Speed", frontRight.get());
-
     SmartDashboard.putNumber("Left Drive Encoder", frontLeftEncoder.getPosition());
     SmartDashboard.putNumber("Right Drive Encoder", frontRightEncoder.getPosition());
     SmartDashboard.putNumber("Distance", getDistance());
     SmartDashboard.putNumber("Gyro Angle", gyro.getAngle());
 
-    updateOdometry();
+    //updateOdometry();
   }
 
   public double getAngle() {

@@ -4,25 +4,28 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.commands.AutoCommands.OneNoteAuto;
+import frc.robot.commands.AutoCommands.OneNoteWithTension;
+import frc.robot.commands.AutoCommands.RedAmpSideTwoNote;
+import frc.robot.commands.AutoCommands.RedSourceSideTwoNote;
 import frc.robot.commands.AutoCommands.BlueAmpSideOneNote;
 import frc.robot.commands.AutoCommands.BlueAmpSideTwoNote;
+import frc.robot.commands.AutoCommands.BlueSourceSideTwoNote;
 import frc.robot.commands.AutoCommands.TwoNoteAuto;
+import frc.robot.commands.AutoCommands.TwoNoteCentreWithTension;
 import frc.robot.commands.ClimbCommands.ClimbUp;
 import frc.robot.commands.DriveCommands.ArcadeDriveCmd;
 import frc.robot.commands.DriveCommands.CentretoNote;
 import frc.robot.commands.DriveCommands.CentretoSpeaker;
-import frc.robot.commands.DriveCommands.DriveStraight;
-import frc.robot.commands.DriveCommands.FastMode;
-import frc.robot.commands.DriveCommands.InvertDrive;
-import frc.robot.commands.DriveCommands.RotateToAngle;
-import frc.robot.commands.DriveCommands.SlowMode;
 import frc.robot.commands.IntakeCommands.Extend;
 import frc.robot.commands.IntakeCommands.Retract;
 import frc.robot.commands.ShooterCommands.Down;
@@ -51,11 +54,19 @@ public class RobotContainer {
   private final CommandXboxController driver = new CommandXboxController(0);
   private final CommandXboxController operator = new CommandXboxController(1);
 
+  SendableChooser<Command> chooser = new SendableChooser<>();
+
   public RobotContainer() {
+    configureBindings();
+
+      //Arcade Drive
+
     drivetrain.setDefaultCommand(
       new ArcadeDriveCmd(drivetrain, 
       () -> -driver.getLeftY(), 
       () -> -driver.getRightX()));
+
+      //Climb Joysticks
 
     climb.setDefaultCommand(
       new ClimbUp(climb, 
@@ -63,7 +74,20 @@ public class RobotContainer {
       () -> operator.getRightY())
     );
 
-    configureBindings();
+    chooser.setDefaultOption("One Note", new OneNoteAuto(drivetrain, intake, shooter, shooterpivot));
+    //chooser.addOption("Centre Two Note", new TwoNoteAuto(drivetrain, intake, shooter, shooterpivot, limelightshooter));
+    chooser.addOption("Blue Amp Side", new BlueAmpSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
+    chooser.addOption("Blue Source Side", new BlueSourceSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
+    chooser.addOption("Red Amp Side", new RedAmpSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
+    chooser.addOption("Red Source Side", new RedSourceSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
+    chooser.addOption("One Note With Tension", new OneNoteWithTension(drivetrain, intake, shooter, shooterpivot, limelightshooter));
+    chooser.addOption("Two Note Centre W/Tension", new TwoNoteCentreWithTension(drivetrain, intake, shooter, shooterpivot, limelightshooter));
+    Shuffleboard.getTab("Drivetrain").add(chooser);
+    
+  }
+
+  public void disabledPeriodic() {
+    limelightshooter.setPriorityID();
   }
 
   private void configureBindings() {
@@ -75,55 +99,51 @@ public class RobotContainer {
     driver.x().whileTrue(drivetrain.runFrontRight());
     driver.y().whileTrue(drivetrain.runBackRight());
 */
+    // Drivetrain
 
-    // Centring
+    //centring
     driver.leftBumper().onTrue(new CentretoNote(drivetrain, limelightintake));
     driver.rightBumper().whileTrue(new CentretoSpeaker(drivetrain, limelightshooter));
 
-    // Shooter adjustment
-    driver.povUp().onTrue(new SetShooterTwoPID(shooterpivot, 42));
-    //driver.povUp().onTrue(new SetShooterTwoPID(shooterpivot, 56.93));
-
-
-    //driver.povUp().onTrue(new SetShooterFixed(shooterpivot, 56.93));
-    driver.povDown().onTrue(new SetShooterFixed(shooterpivot, 36.3));
-    //driver.povRight().onTrue(new SetShooterFixed(shooterpivot, 0.93));
-    
-    driver.povLeft().whileTrue(new SetShooterPosition(shooterpivot, limelightshooter));
-
     //invert
-    driver.a().whileTrue(new InvertDrive(drivetrain));
+    driver.a().onTrue(new InstantCommand(drivetrain::invertMotors));
+
     //reset encoder
     driver.b().onTrue(new InstantCommand(drivetrain::resetEncoders).ignoringDisable(true));
 
-    //Fast and Slow
-    //driver.x().whileTrue(new FastMode(drivetrain));
-    //driver.rightTrigger().whileTrue(new SlowMode(drivetrain));
+    //fast and slow
     driver.x().onTrue(new InstantCommand(drivetrain::FastMode));
     driver.rightTrigger().onTrue(new InstantCommand(drivetrain::SlowMode));
     
+    // Intake
 
-    // Intake wheels manual
-    operator.x().whileTrue(intake.IntakeNoteCmd(0.3));
+    //intake wheels manual
+    operator.x().whileTrue(intake.IntakeNoteCmd(IntakeConstants.intakeSpeed));
     operator.a().whileTrue(intake.EjectNoteCmd(1));
-    //Intake Setpoint Manual
+    //intake Setpoint Manual
     operator.povUp().onTrue(new Extend(intake));
     operator.povDown().onTrue(new Retract(intake));
-    //Extend -> Intake -> Retract
+    //extend -> intake -> retract
     operator.rightBumper().onTrue(
-      new Extend(intake)
-      .andThen(intake.IntakeNoteCmd(IntakeConstants.intakeSpeed)).until(intake::hasNote)
+      new Extend(intake).until(intake::hasNote)
       .andThen(new Retract(intake)));
+      
+    // Shooterpivot
 
-    // Shooter Instant
+    //Shooter adjustment
+    driver.povUp().onTrue(new SetShooterTwoPID(shooterpivot, shooterpivot.rawToDegrees(0.95)));
+    driver.povDown().onTrue(new SetShooterFixed(shooterpivot, 36.3));
+    operator.povLeft().whileTrue(new SetShooterPosition(shooterpivot, limelightshooter));
+
+    //Shooter instant
     operator.y().whileTrue(shooter.Shoot(1, 0.95));
-    // shooter variable
+    //shooter variable
     operator.leftTrigger(0.3).whileTrue(shooter.Shoot(0.5, 0.5).unless(operator.leftTrigger(0.9)));
     operator.leftTrigger(0.9).whileTrue(shooter.Shoot(1, 0.95));
 
-    // Shooter Pivot Manual
-    operator.povRight().whileTrue(new Down(shooterpivot, 0.1));
-    operator.povLeft().whileTrue(new Up(shooterpivot, 0.1));
+    //Shooter pivot manual
+    //operator.povRight().whileTrue(new Down(shooterpivot, 0.1));
+    //operator.povLeft().whileTrue(new Up(shooterpivot, 0.1));
 /*
     //Shooter Characterization
     operator.a().and(operator.rightBumper())
@@ -145,7 +165,6 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return new BlueAmpSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake);
-    //new TwoNoteAuto(drivetrain, intake, shooter, shooterpivot, limelightshooter);
+    return chooser.getSelected();
   }
 }

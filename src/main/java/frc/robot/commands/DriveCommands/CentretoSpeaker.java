@@ -6,6 +6,7 @@ package frc.robot.commands.DriveCommands;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.LimelightShooter;
 
@@ -24,7 +25,7 @@ public class CentretoSpeaker extends Command {
   @Override
   public void initialize() {
     System.out.println("CentreToSpeaker Start");
-    limelightShooter.setDoubleEntry("priorityid", 7);
+    limelightShooter.setDoubleEntry("priorityid", ShooterConstants.priorityid);
     pid.reset();
     pid.setTolerance(1);
   }

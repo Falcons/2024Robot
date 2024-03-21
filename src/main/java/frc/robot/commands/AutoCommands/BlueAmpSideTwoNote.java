@@ -5,6 +5,7 @@
 package frc.robot.commands.AutoCommands;
 
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.IntakeConstants;
@@ -35,28 +36,22 @@ public class BlueAmpSideTwoNote extends SequentialCommandGroup {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new ParallelCommandGroup(
-        new SetShooterTwoPID(shooterpivot, 56.93).until(() -> shooterpivot.getDegreesFromRaw() > 56),
-        new ParallelCommandGroup(
-          new Shoot(shooter, 1, 0.95).withTimeout(3),
-          new SequentialCommandGroup(
-            new WaitCommand(2), 
-            new EjectNote(intake, 1).withTimeout(1))
-            )
-    ),
+      new OneNoteWithTension(drivetrain, intake, shooter, shooterpivot, ls),
+
       //new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegreesFromRaw() < 41),
-      new DriveStraight(drivetrain, 0.5).until(() -> drivetrain.getDistance() > 0.25),
-      new ParallelCommandGroup(
+
+      //straight and then pivot
+      new DriveStraight(drivetrain, 0.5).until(() -> drivetrain.getDistance() > 0.5),
+      new ParallelRaceGroup(
         new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegreesFromRaw() < 43).withTimeout(0.75),
         new RotateToAngle(drivetrain, 55).withTimeout(0.75)
       ),
 
-      //centre and pickup
+      //Centre and pickup
       new CentretoNote(drivetrain, li),
-      new Extend(intake),
       new ParallelCommandGroup(
-        new DriveStraight(drivetrain, 0.5),
-        new IntakeNote(intake, IntakeConstants.intakeSpeed)
+        new Extend(intake),
+        new DriveStraight(drivetrain, 0.5)
       ).until(intake::hasNote),
       new Retract(intake),
       
@@ -64,9 +59,9 @@ public class BlueAmpSideTwoNote extends SequentialCommandGroup {
       new RotateToAngle(drivetrain, -30).withTimeout(1),
       new CentretoSpeaker(drivetrain, ls),
 
-      new DriveStraight(drivetrain, -0.5).until(() -> drivetrain.getDistance() < -0.6),
+      new DriveStraight(drivetrain, -0.5).until(() -> drivetrain.getDistance() < -0.7),
       //shoot
-      new ParallelCommandGroup(
+      new ParallelRaceGroup(
         new SetShooterPosition(shooterpivot, ls),
         new ParallelCommandGroup(
           new Shoot(shooter, 1, 0.95).withTimeout(3),

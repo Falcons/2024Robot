@@ -4,19 +4,42 @@
 
 package frc.robot.subsystems;
 
+import java.sql.Driver;
+
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.LimelightHelpers;
 
 public class LimelightShooter extends SubsystemBase {
   private final NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight-shooter");
-  public LimelightShooter() {}
+  public LimelightShooter() {
+    setPriorityID();
+  }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Distance_speaker", getDistanceSpeaker());
+    SmartDashboard.putNumber("Distance Speaker", getDistanceSpeaker());
+    SmartDashboard.putNumber("Setpoint Angle", getShooterPivotAutoAngle());
+  }
+
+  public void setPriorityID() {
+    if (DriverStation.getAlliance().isEmpty()) return;
+
+    
+    if (DriverStation.getAlliance().get() == Alliance.Red) {
+      setDoubleEntry("priorityid", 4);
+    } else if (DriverStation.getAlliance().get() == Alliance.Blue) {
+      setDoubleEntry("priorityid", 7);
+    }
+  }
+
+  public double getShooterPivotAutoAngle() {
+    return (-0.00105 * getDistanceSpeaker() + 0.978) * 360 - 285.07;
   }
 
   public double getDoubleEntry(String entry) {

@@ -26,7 +26,13 @@ public class Climb extends SubsystemBase {
   private final DigitalInput rightClimbLimit = new DigitalInput(ClimbConstants.rightClimbLimitPort);
 
   public Climb() {
+    leftClimb.restoreFactoryDefaults();
+    rightClimb.restoreFactoryDefaults();
+
     rightClimb.setInverted(true);
+
+    leftClimb.setSmartCurrentLimit(40);
+    rightClimb.setSmartCurrentLimit(40);
     setCoastMode();
   }
 

@@ -5,7 +5,7 @@
 package frc.robot.commands.ShooterCommands;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.LimelightShooter;
@@ -14,15 +14,14 @@ import frc.robot.subsystems.ShooterPivot;
 public class SetShooterPosition extends Command {
   private final ShooterPivot shooterpivot;
   private final LimelightShooter limelightshooter;
-  private double pos;
   private final PIDController pid;
   //private final ArmFeedforward armFF;
   
   public SetShooterPosition(ShooterPivot shooterpivot, LimelightShooter ls) {
     this.shooterpivot = shooterpivot;
     this.limelightshooter = ls;
-    this.pos = shooterpivot.returnClosest(limelightshooter.getDistanceSpeaker());
-    this.pid = new PIDController(0.2, 0, 0); //P: 1.2
+    //this.pos = shooterpivot.returnClosest(limelightshooter.getDistanceSpeaker());
+    this.pid = new PIDController(0.25, 0.1, 0); //P: 0.3
     addRequirements(shooterpivot, limelightshooter);
   }
 
@@ -30,9 +29,8 @@ public class SetShooterPosition extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    System.out.println(pos);
     pid.reset();
-    limelightshooter.setDoubleEntry("priorityid", 7);
+    limelightshooter.setDoubleEntry("priorityid", ShooterConstants.priorityid);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -41,15 +39,23 @@ public class SetShooterPosition extends Command {
     double speed;
     double angle = -0.00105 * limelightshooter.getDistanceSpeaker() + 0.978;
     angle = shooterpivot.rawToDegrees(angle);
-    System.out.println("Angle: " + angle);
 
     double PIDOutput = pid.calculate(shooterpivot.getDegreesFromRaw(), angle);
 
-    
+    SmartDashboard.putNumber("Error", pid.getPositionError());
+
       if (pid.getPositionError() < 0) {
-        speed = PIDOutput / 10.0;
+        speed = PIDOutput;
       } else {
         speed = PIDOutput;
+      }
+
+      if (shooterpivot.getSoftUpperLimit() && speed > 0 ) {
+        speed = 0;
+        System.out.println("0");
+      } else if (shooterpivot.getSoftLowerLimit() && speed < 0) {
+        speed = 0;
+        System.out.println("0");
       }
 
     //shooterpivot.returnClosest(limelightshooter.getDistanceSpeaker());
@@ -57,19 +63,21 @@ public class SetShooterPosition extends Command {
     //double angle = shooterpivot.getHashValue(pos);
 
     //speed = (pid.calculate(shooterpivot.getThruBore(), angle));
-    shooterpivot.setVoltage(-speed);
+    shooterpivot.setVoltage(-PIDOutput);
+    System.out.println(speed);
   }
+
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    shooterpivot.getShooterMap();
+    System.out.println("Auto Aim Ended");
     shooterpivot.stopShooterPivot();
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return shooterpivot.getSoftUpperLimit();
+    return false;
   }
 }

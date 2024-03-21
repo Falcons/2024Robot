@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.DriveCommands.DriveStraight;
 import frc.robot.commands.IntakeCommands.EjectNote;
 import frc.robot.commands.ShooterCommands.SetShooterFixed;
+import frc.robot.commands.ShooterCommands.SetShooterTwoPID;
 import frc.robot.commands.ShooterCommands.Shoot;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
@@ -24,12 +25,16 @@ public class OneNoteAuto extends SequentialCommandGroup {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new SetShooterFixed(shooterpivot, 0.967).until(() -> shooterpivot.getThruBore() > 0.95),
       new ParallelCommandGroup(
-        new Shoot(shooter, 1, 0.95).withTimeout(3),
-        new SequentialCommandGroup(
-          new WaitCommand(2), 
-          new EjectNote(intake, 1).withTimeout(2))),
+        new SetShooterTwoPID(shooterpivot, shooterpivot.rawToDegrees(0.967)),
+        //new SetShooterFixed(shooterpivot, 0.967),
+        new ParallelCommandGroup(
+          new Shoot(shooter, 1, 0.95).withTimeout(3),
+          new SequentialCommandGroup(
+            new WaitCommand(2), 
+            new EjectNote(intake, 1).withTimeout(2))
+        )
+      ),
       new DriveStraight(drivetrain, 0.5).withTimeout(3)
     );
   }

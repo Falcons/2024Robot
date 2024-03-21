@@ -25,7 +25,16 @@ public class Intake extends SubsystemBase {
 
   private final TimeOfFlight tof = new TimeOfFlight(0);
 
-  public Intake() {}
+  public Intake() {
+    pivot.restoreFactoryDefaults();
+    wheels.restoreFactoryDefaults();
+
+    pivot.setSmartCurrentLimit(40);
+    wheels.setSmartCurrentLimit(30);
+
+    pivot.burnFlash();
+    wheels.burnFlash();
+  }
 
   public void IntakeNote(double speed){
     wheels.set(-speed);
@@ -80,7 +89,7 @@ public class Intake extends SubsystemBase {
     SmartDashboard.putNumber("Intake Thru Bore", intakeThruBore.getPosition());
     SmartDashboard.putNumber("TOF", tof.getRange());
     SmartDashboard.putBoolean("Has Note", hasNote());
-    SmartDashboard.putString("Intake", getRetractedorExtended());
+    //SmartDashboard.putString("Intake", getRetractedorExtended());
   }
 
   public Command IntakeNoteCmd(double speed) {

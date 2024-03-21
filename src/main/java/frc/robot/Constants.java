@@ -25,7 +25,7 @@ public final class Constants {
         public static final int pivotID = 10;
         public static final int wheelID = 11;
 
-        public static final double intakeOutAngle = 0.08;
+        public static final double intakeOutAngle = 0.08; //0.08
         public static final double intakeInAngle = 0.657;
 
         public static final int intakeBottomLimit = 3;
@@ -61,7 +61,9 @@ public final class Constants {
         public static final double kV = 0;
 
         public static final double maxSpeed = 0;
-        public static final double maxAccel = 0;
+        public static final double maxAccel = 0;    
+
+        public static final int priorityid = 7;
     }
 
     public static final class ClimbConstants {

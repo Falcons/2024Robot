@@ -21,9 +21,9 @@ public class SetShooterTwoPID extends Command {
   public SetShooterTwoPID(ShooterPivot shooterpivot, double pos) {
     this.shooterpivot = shooterpivot;
     this.position = pos;
-    this.pidToSetpoint = new PIDController(0.2, 0, 0);
+    this.pidToSetpoint = new PIDController(0.3, 0, 0);
 
-    this.pidFixed = new PIDController(0.4, 0.01, 0);
+    this.pidFixed = new PIDController(0.3, 0.01, 0);
     this.armFF = new ArmFeedforward(0, 0.35, 1.95, 0.02);
     addRequirements(shooterpivot);
   }
@@ -43,19 +43,15 @@ public class SetShooterTwoPID extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double FFOutput = armFF.calculate(42 * ShooterConstants.degreesToRadians, 0);
+    double FFOutput = armFF.calculate(shooterpivot.getDegreesFromRaw() * ShooterConstants.degreesToRadians, 0);
     double PIDToSetpointOutput = pidToSetpoint.calculate(shooterpivot.getDegreesFromRaw(), position);
     double PIDFixedOutput = pidFixed.calculate(shooterpivot.getDegreesFromRaw(), position);
     double speed;
 
-    if (pidToSetpoint.atSetpoint()) {
-      speed = PIDToSetpointOutput;
+    if (pidToSetpoint.getPositionError() < 0) {
+      speed = PIDToSetpointOutput / 10.0;
     } else {
-      if (pidToSetpoint.getPositionError() < 0) {
-        speed = PIDToSetpointOutput / 10.0;
-      } else {
-        speed = PIDToSetpointOutput;
-      }
+       speed = PIDToSetpointOutput;
     }
 
     if (shooterpivot.getSoftUpperLimit() && speed > 0 ) {
@@ -63,6 +59,7 @@ public class SetShooterTwoPID extends Command {
     } else if (shooterpivot.getSoftLowerLimit() && speed < 0) {
       speed = 0;
     }
+
     shooterpivot.setVoltage(-speed);
 
     SmartDashboard.putBoolean("At Setpoint", pidToSetpoint.atSetpoint());

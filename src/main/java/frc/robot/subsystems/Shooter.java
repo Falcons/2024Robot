@@ -4,6 +4,12 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
+import com.ctre.phoenix6.configs.Slot2Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -15,7 +21,26 @@ public class Shooter extends SubsystemBase {
   private final TalonFX leftFlywheel = new TalonFX(ShooterConstants.leftFlywheelID);
   private final TalonFX rightFlywheel = new TalonFX(ShooterConstants.rightFlywheelID);
 
+  
+
   public Shooter() {
+    leftFlywheel.getConfigurator().apply(new TalonFXConfiguration());
+    rightFlywheel.getConfigurator().apply(new TalonFXConfiguration());
+
+  /*
+    var leftFlywheelConfigurator = leftFlywheel.getConfigurator();
+    var rightFlywheelConfigurator = rightFlywheel.getConfigurator();
+    var currentlimitConfigs = new CurrentLimitsConfigs();
+    
+
+    currentlimitConfigs.SupplyCurrentLimit = 30.0;
+    currentlimitConfigs.StatorCurrentLimit = 30.0;
+    currentlimitConfigs.SupplyCurrentLimitEnable = true;
+    currentlimitConfigs.StatorCurrentLimitEnable = true;
+
+    //leftFlywheelConfigurator.apply(currentlimitConfigs);
+    //rightFlywheelConfigurator.apply(currentlimitConfigs);
+*/
     rightFlywheel.setInverted(true);
   }
 

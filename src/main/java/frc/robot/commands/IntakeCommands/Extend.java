@@ -12,9 +12,11 @@ import frc.robot.subsystems.Intake;
 public class Extend extends Command {
   private final Intake intake;
   private final PIDController pid;
+  private final PIDController pidFixed;
   public Extend(Intake intake) {
     this.intake = intake;
     this.pid = new PIDController(1.5, 0, 0);
+    this.pidFixed = new PIDController(1.6, 0, 0);
     addRequirements(intake);
   }
 
@@ -29,6 +31,13 @@ public class Extend extends Command {
   @Override
   public void execute() {
     double speed = pid.calculate(intake.getIntakeAngle(), IntakeConstants.intakeOutAngle);
+    
+
+    if (pid.atSetpoint()) {
+      intake.IntakeNote(0.3);
+      //speed = pidFixed.calculate(intake.getIntakeAngle(), IntakeConstants.intakeOutAngle);
+    }
+
     intake.pivotSpeed(-speed);
   }
 
@@ -41,6 +50,6 @@ public class Extend extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return pid.atSetpoint();
+    return false;
   }
 }
