@@ -4,23 +4,35 @@
 
 package frc.robot;
 
+import java.util.List;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.commands.AutoCommands.OneNoteAuto;
 import frc.robot.commands.AutoCommands.OneNoteWithTension;
 import frc.robot.commands.AutoCommands.RedAmpSideTwoNote;
 import frc.robot.commands.AutoCommands.RedSourceSideTwoNote;
 import frc.robot.commands.AutoCommands.BlueAmpSideOneNote;
 import frc.robot.commands.AutoCommands.BlueAmpSideTwoNote;
 import frc.robot.commands.AutoCommands.BlueSourceSideTwoNote;
-import frc.robot.commands.AutoCommands.TwoNoteAuto;
 import frc.robot.commands.AutoCommands.TwoNoteCentreWithTension;
 import frc.robot.commands.ClimbCommands.ClimbUp;
 import frc.robot.commands.DriveCommands.ArcadeDriveCmd;
@@ -74,7 +86,7 @@ public class RobotContainer {
       () -> operator.getRightY())
     );
 
-    chooser.setDefaultOption("One Note", new OneNoteAuto(drivetrain, intake, shooter, shooterpivot));
+    ;
     //chooser.addOption("Centre Two Note", new TwoNoteAuto(drivetrain, intake, shooter, shooterpivot, limelightshooter));
     chooser.addOption("Blue Amp Side", new BlueAmpSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
     chooser.addOption("Blue Source Side", new BlueSourceSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
@@ -165,6 +177,48 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return chooser.getSelected();
+    var autoVoltageConstraint =
+        new DifferentialDriveVoltageConstraint(
+            new SimpleMotorFeedforward(
+                DriveConstants.ks,
+                DriveConstants.kv,
+                DriveConstants.ka),
+            DriveConstants.kDriveKinematics,
+            10);
+
+    TrajectoryConfig config =
+        new TrajectoryConfig(
+                DriveConstants.kMaxSpeedMetersPerSecond,
+                DriveConstants.kMaxAccelerationMetersPerSecondSquared)
+            // Add kinematics to ensure max speed is actually obeyed
+            .setKinematics(DriveConstants.kDriveKinematics)
+            // Apply the voltage constraint
+            .addConstraint(autoVoltageConstraint);
+
+    Trajectory speakerCenter =
+        TrajectoryGenerator.generateTrajectory(
+            // Start at the origin facing the +X direction
+            new Pose2d(drivetrain.getPose().getX(), drivetrain.getPose().getY(), drivetrain.getPose().getRotation()),
+            List.of(),
+            // End 3 meters straight ahead of where we started, facing forward
+            new Pose2d(6, 0, new Rotation2d(0)),
+            // Pass config
+            config);
+
+    RamseteCommand ramseteCommand =
+        new RamseteCommand(
+          speakerCenter,
+          drivetrain::getPose,
+          new RamseteController(DriveConstants.kRamseteB, DriveConstants.kRamseteZeta),
+          new SimpleMotorFeedforward(DriveConstants.ks, DriveConstants.kv, DriveConstants.ka),
+          DriveConstants.kDriveKinematics,
+          drivetrain::getWheelSpeeds,
+          new PIDController(DriveConstants.kPVel, 0, 0),
+          new PIDController(DriveConstants.kPVel, 0, 0),
+          drivetrain::tankDriveVolts,
+          drivetrain);
+    
+    // return chooser.getSelected();
+    return Commands.runOnce(() -> drivetrain.updateOdometry()).andThen(ramseteCommand).andThen(() -> drivetrain.tankDriveVolts(0, 0));
   }
 }
