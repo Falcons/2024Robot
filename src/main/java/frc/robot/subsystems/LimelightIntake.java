@@ -45,6 +45,10 @@ public class LimelightIntake extends SubsystemBase {
       return getDoubleEntry("tid");
   }
 
+  public boolean getTV() {
+      return table.getEntry("tv").getBoolean(false);
+  }
+
   public double[] getBotpose() {
     return getArrayEntry("botpose");
   }

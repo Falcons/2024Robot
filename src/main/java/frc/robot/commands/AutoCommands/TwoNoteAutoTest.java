@@ -37,22 +37,14 @@ public class TwoNoteAutoTest extends SequentialCommandGroup {
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
       //initial shooting
-      new ParallelCommandGroup(
-        new SetShooterTwoPID(shooterpivot, 56.93).until(() -> shooterpivot.getDegreesFromRaw() > 56),
-        new ParallelCommandGroup(
-          new Shoot(shooter, 1, 0.95).withTimeout(3),
-          new SequentialCommandGroup(
-            new WaitCommand(2), 
-            new EjectNote(intake, 1).withTimeout(1))
-        )
-      ),
+      new OneNoteWithTension(drivetrain, intake, shooter, shooterpivot, ls),
       new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegreesFromRaw() < 38),
 
       //drive and pickup note in front
       new Extend(intake),
       new ParallelCommandGroup(
         //new DriveStraight(drivetrain, 0.45),
-        new InstantCommand(() -> drivetrain.tankDrive(1,-1)).until(() -> li.getTV() == true),
+        new InstantCommand(() -> drivetrain.tankDrive(1,-1)).until(() -> li.getTV() == true && drivetrain.getPose().getX() > 0),
         new DriveToTarget(drivetrain, li),
         new IntakeNote(intake, IntakeConstants.intakeSpeed),
         new SetShooterTwoPID(shooterpivot, 36.4)
@@ -70,7 +62,16 @@ public class TwoNoteAutoTest extends SequentialCommandGroup {
         new SequentialCommandGroup(
           new WaitCommand(2), 
           new EjectNote(intake, 1).withTimeout(2))
-          )
+    ),
+    new ParallelCommandGroup(
+        new SetShooterTwoPID(shooterpivot, 56.93).until(() -> shooterpivot.getDegreesFromRaw() > 56),
+        new ParallelCommandGroup(
+          new Shoot(shooter, 1, 0.95).withTimeout(3),
+          new SequentialCommandGroup(
+            new WaitCommand(2), 
+            new EjectNote(intake, 1).withTimeout(1))
+        )
+      )
     
     );
   }
