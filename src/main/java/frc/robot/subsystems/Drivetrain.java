@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.List;
+
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -11,16 +13,26 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.LimelightHelpers;
@@ -205,6 +217,11 @@ public class Drivetrain extends SubsystemBase {
     return m_odometry.getPoseMeters();
   }
   
+  public Trajectory generateTrajectory(List<Translation2d> waypoints, Pose2d endPose){
+    var autoVoltageConstraint = new DifferentialDriveVoltageConstraint(new SimpleMotorFeedforward(DriveConstants.ks,DriveConstants.kv,DriveConstants.ka),DriveConstants.kDriveKinematics,10);
+    TrajectoryConfig config = new TrajectoryConfig(DriveConstants.kMaxSpeedMetersPerSecond,DriveConstants.kMaxAccelerationMetersPerSecondSquared).setKinematics(DriveConstants.kDriveKinematics).addConstraint(autoVoltageConstraint);
+     return TrajectoryGenerator.generateTrajectory(getPose(),waypoints,endPose,config);
+  }
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Left Drive Encoder", frontLeftEncoder.getPosition());
@@ -213,6 +230,21 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putNumber("Gyro Angle", gyro.getAngle());
 
     //updateOdometry();
+  }
+
+  public Command ramsete(Trajectory trajectory){
+    RamseteCommand ramseteCommand =
+        new RamseteCommand(
+          trajectory,
+          this::getPose,
+          new RamseteController(DriveConstants.kRamseteB, DriveConstants.kRamseteZeta),
+          new SimpleMotorFeedforward(DriveConstants.ks, DriveConstants.kv, DriveConstants.ka),
+          DriveConstants.kDriveKinematics,
+          this::getWheelSpeeds,
+          new PIDController(DriveConstants.kPVel, 0, 0),
+          new PIDController(DriveConstants.kPVel, 0, 0),
+          this::tankDriveVolts);
+    return ramseteCommand;
   }
 
   public Command runFrontLeft() {
