@@ -24,10 +24,10 @@ public class Shooter extends SubsystemBase {
   
 
   public Shooter() {
-    leftFlywheel.getConfigurator().apply(new TalonFXConfiguration());
-    rightFlywheel.getConfigurator().apply(new TalonFXConfiguration());
+    //leftFlywheel.getConfigurator().apply(new TalonFXConfiguration());
+    //rightFlywheel.getConfigurator().apply(new TalonFXConfiguration());
 
-  /*
+  
     var leftFlywheelConfigurator = leftFlywheel.getConfigurator();
     var rightFlywheelConfigurator = rightFlywheel.getConfigurator();
     var currentlimitConfigs = new CurrentLimitsConfigs();
@@ -38,9 +38,9 @@ public class Shooter extends SubsystemBase {
     currentlimitConfigs.SupplyCurrentLimitEnable = true;
     currentlimitConfigs.StatorCurrentLimitEnable = true;
 
-    //leftFlywheelConfigurator.apply(currentlimitConfigs);
-    //rightFlywheelConfigurator.apply(currentlimitConfigs);
-*/
+    leftFlywheelConfigurator.apply(currentlimitConfigs);
+    rightFlywheelConfigurator.apply(currentlimitConfigs);
+
     rightFlywheel.setInverted(true);
   }
 

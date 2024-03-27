@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.DriveCommands.DriveStraight;
-import frc.robot.commands.DriveCommands.RotateToAngle;
+import frc.robot.commands.DriveCommands.RotateAngle;
 import frc.robot.commands.IntakeCommands.EjectNote;
 import frc.robot.commands.ShooterCommands.SetShooterTwoPID;
 import frc.robot.commands.ShooterCommands.Shoot;
@@ -36,7 +36,7 @@ public class BlueAmpSideOneNote extends SequentialCommandGroup {
           ),
       new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegreesFromRaw() < 38),
       new DriveStraight(drivetrain, 0.5).until(() -> drivetrain.getDistance() > 0.25),
-      new RotateToAngle(drivetrain, 55).withTimeout(1),
+      new RotateAngle(drivetrain, 55).withTimeout(1),
       new DriveStraight(drivetrain, 0.5).withTimeout(1.5)
     );
   }

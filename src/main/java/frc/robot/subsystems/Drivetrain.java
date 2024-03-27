@@ -158,7 +158,7 @@ public class Drivetrain extends SubsystemBase {
     return (frontLeftEncoder.getPosition() + frontRightEncoder.getPosition()) / 2.0;
   }
 
-  public void setSafteyEnabled(boolean state) {
+  public void setSafetyEnabled(boolean state) {
     drive.setSafetyEnabled(state);
   }
   
@@ -169,19 +169,7 @@ public class Drivetrain extends SubsystemBase {
   public void setYaw(double value) {
     gyro.setYaw(value);
   }
-/*
-  public void arcadeDriveManual(double speed, double rotation) {
-    if (speed < 0.1 && speed > -0.1) {
-      speed = 0;
-    }
-    if (rotation < 0.1 && rotation > -0.1) {
-      rotation = 0;
-    }
 
-      frontLeft.set(speed + rotation);
-      frontRight.set(speed - rotation);
-  }
-*/
   public void arcadeDrive(double speed, double rotation) {
     drive.arcadeDrive(speed, rotation);
   }

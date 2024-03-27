@@ -9,10 +9,10 @@ import java.util.function.Supplier;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Climb;
 
-public class ClimbUp extends Command {
+public class ClimbManual extends Command {
   private final Climb climb;
   private final Supplier<Double> leftSpeed, rightSpeed;
-  public ClimbUp(Climb c, Supplier<Double> leftSpeed, Supplier<Double> rightSpeed) {
+  public ClimbManual(Climb c, Supplier<Double> leftSpeed, Supplier<Double> rightSpeed) {
     this.climb = c;
     this.leftSpeed = leftSpeed;
     this.rightSpeed = rightSpeed;
@@ -30,6 +30,7 @@ public class ClimbUp extends Command {
   public void execute() {
     double realTimeLeftSpeed = leftSpeed.get();
     double realTimeRightSpeed = rightSpeed.get();
+    
     if (realTimeLeftSpeed < 0.1 && realTimeLeftSpeed > -0.1 )  {
       realTimeLeftSpeed = 0;
     }

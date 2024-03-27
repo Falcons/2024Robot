@@ -49,7 +49,7 @@ public class SetShooterTwoPID extends Command {
     double speed;
 
     if (pidToSetpoint.getPositionError() < 0) {
-      speed = PIDToSetpointOutput / 10.0;
+      speed = PIDToSetpointOutput / 5.0;
     } else {
        speed = PIDToSetpointOutput;
     }

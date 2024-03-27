@@ -12,7 +12,7 @@ import frc.robot.Constants.IntakeConstants;
 import frc.robot.commands.DriveCommands.CentretoNote;
 import frc.robot.commands.DriveCommands.CentretoSpeaker;
 import frc.robot.commands.DriveCommands.DriveStraight;
-import frc.robot.commands.DriveCommands.RotateToAngle;
+import frc.robot.commands.DriveCommands.RotateAngle;
 import frc.robot.commands.IntakeCommands.EjectNote;
 import frc.robot.commands.IntakeCommands.Extend;
 import frc.robot.commands.IntakeCommands.IntakeNote;
@@ -44,7 +44,7 @@ public class BlueAmpSideTwoNote extends SequentialCommandGroup {
       new DriveStraight(drivetrain, 0.5).until(() -> drivetrain.getDistance() > 0.5),
       new ParallelRaceGroup(
         new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegreesFromRaw() < 43).withTimeout(0.75),
-        new RotateToAngle(drivetrain, 55).withTimeout(0.75)
+        new RotateAngle(drivetrain, 55).withTimeout(0.75)
       ),
 
       //Centre and pickup
@@ -56,7 +56,7 @@ public class BlueAmpSideTwoNote extends SequentialCommandGroup {
       new Retract(intake),
       
       //centre with speaker
-      new RotateToAngle(drivetrain, -30).withTimeout(1),
+      new RotateAngle(drivetrain, -30).withTimeout(1),
       new CentretoSpeaker(drivetrain, ls),
 
       new DriveStraight(drivetrain, -0.5).until(() -> drivetrain.getDistance() < -0.7),

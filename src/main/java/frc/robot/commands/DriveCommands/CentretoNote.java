@@ -17,7 +17,7 @@ public class CentretoNote extends Command {
   public CentretoNote(Drivetrain d, LimelightIntake li) {
     this.drivetrain = d;
     this.limelightIntake = li;
-    this.pid = new PIDController(0.042, 0.03, 0);
+    this.pid = new PIDController(0.032, 0.018, 0);
     addRequirements(drivetrain, limelightIntake);
   }
 

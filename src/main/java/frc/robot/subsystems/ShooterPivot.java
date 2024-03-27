@@ -32,6 +32,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ShooterConstants;
 
 import static edu.wpi.first.units.MutableMeasure.mutable;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
@@ -70,6 +72,7 @@ public class ShooterPivot extends SubsystemBase {
 
     thruBore = pivot.getAbsoluteEncoder();
     //thruBore.setPositionConversionFactor(ShooterConstants.rotationsToRadians);
+    //thruBore.setVelocityConversionFactor(ShooterConstants.rotationsToRadians);
     //thruBore.setVelocityConversionFactor(ShooterConstants.rotationsToRadians / 60.0);
     //thruBore.setZeroOffset(ShooterConstants.pivotZeroOffset.getRadians());
 
@@ -119,33 +122,14 @@ public class ShooterPivot extends SubsystemBase {
                     .voltage(
                         m_appliedVoltage.mut_replace(
                             pivot.get() * RobotController.getBatteryVoltage(), Volts))
-                    .angularPosition(m_angle.mut_replace(thruBore.getPosition(), Rotations))
+                    .angularPosition(m_angle.mut_replace(getRadiansFromRaw(), Radians))
                     .angularVelocity(
-                        m_velocity.mut_replace(thruBore.getVelocity(), RotationsPerSecond));
+                        m_velocity.mut_replace(thruBore.getVelocity(), RadiansPerSecond));
               },
               // Tell SysId to make generated commands require this subsystem, suffix test state in
               // WPILog with this subsystem's name ("shooter")
               this));
 
-    //setShooterPivotMap();
-  }
-  
-  public void setShooterPivotMap() {
-    shooterPivotMap.put(32.75, 0.95); //0.95
-    shooterPivotMap.put(36.17, 0.945); //0.945
-    shooterPivotMap.put(40.42, 0.933); //0.933
-    shooterPivotMap.put(45.65, 0.927); //0.927
-    shooterPivotMap.put(50.22, 0.917); // 0.917
-    shooterPivotMap.put(55.4, 0.923); //0.923
-    shooterPivotMap.put(58.76, 0.908); //0.908
-    shooterPivotMap.put(62.1, 0.909); //0.909
-    shooterPivotMap.put(65.59, 0.909); //0.909
-    shooterPivotMap.put(70.0, 0.906); //0.906
-    shooterPivotMap.put(74.54, 0.898); //0.898
-    shooterPivotMap.put(78.12, 0.899); //0.899
-    shooterPivotMap.put(83.37, 0.894); //0.894
-    shooterPivotMap.put(87.43, 0.894); //0.894
-    shooterPivotMap.put(89.8, 0.894); //0.894
   }
 
   public double getRadiansFromRaw() {
@@ -157,26 +141,8 @@ public class ShooterPivot extends SubsystemBase {
   public double rawToDegrees(double raw) {
     return raw * 360 - 285.07;
   }
-
-  public double getHashValue(double key) {
-    return shooterPivotMap.get(key);
-  }
-
-  public double returnClosest(double distance) {
-    Double minDiff = Double.MAX_VALUE;
-    Double nearest = null;
-    for (Double key : shooterPivotMap.keySet()) {
-      double diff = Math.abs(distance - key);
-      if (diff < minDiff) {
-        nearest = key;
-        minDiff = diff;
-      }
-    }
-    return nearest;
-  }
-
-  public TreeMap<Double, Double> getShooterMap() {
-    return shooterPivotMap;
+  public double rawToRadians(double raw) {
+    return raw * 2 * Math.PI - 4.9754;
   }
 
   public void setPivotAngle(Rotation2d angle) {

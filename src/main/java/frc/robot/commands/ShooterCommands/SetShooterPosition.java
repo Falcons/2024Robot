@@ -45,7 +45,7 @@ public class SetShooterPosition extends Command {
     SmartDashboard.putNumber("Error", pid.getPositionError());
 
       if (pid.getPositionError() < 0) {
-        speed = PIDOutput;
+        speed = PIDOutput / 20.0;
       } else {
         speed = PIDOutput;
       }
