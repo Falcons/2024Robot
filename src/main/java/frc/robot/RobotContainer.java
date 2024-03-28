@@ -39,6 +39,8 @@ import frc.robot.commands.ClimbCommands.ClimbUp;
 import frc.robot.commands.DriveCommands.ArcadeDriveCmd;
 import frc.robot.commands.DriveCommands.CentretoNote;
 import frc.robot.commands.DriveCommands.CentretoSpeaker;
+import frc.robot.commands.DriveCommands.MoveToShooter;
+import frc.robot.commands.DriveCommands.DriveToTarget;
 import frc.robot.commands.IntakeCommands.Extend;
 import frc.robot.commands.IntakeCommands.Retract;
 import frc.robot.commands.ShooterCommands.Down;
