@@ -31,6 +31,7 @@ import frc.robot.Constants.ShooterConstants;
 import frc.robot.commands.AutoCommands.OneNoteWithTension;
 import frc.robot.commands.AutoCommands.RedAmpSideTwoNote;
 import frc.robot.commands.AutoCommands.RedSourceSideTwoNote;
+import frc.robot.commands.AutoCommands.TwoNoteAutoTest;
 import frc.robot.commands.AutoCommands.BlueAmpSideOneNote;
 import frc.robot.commands.AutoCommands.BlueAmpSideTwoNote;
 import frc.robot.commands.AutoCommands.BlueSourceSideTwoNote;
@@ -97,6 +98,7 @@ public class RobotContainer {
     chooser.addOption("Red Source Side", new RedSourceSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
     chooser.addOption("One Note With Tension", new OneNoteWithTension(drivetrain, intake, shooter, shooterpivot, limelightshooter));
     chooser.addOption("Two Note Centre W/Tension", new TwoNoteCentreWithTension(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
+    chooser.addOption("Two Note Centre W/Tension", new TwoNoteAutoTest(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
     Shuffleboard.getTab("Drivetrain").add(chooser);
     
   }
