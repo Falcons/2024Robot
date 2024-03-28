@@ -94,7 +94,7 @@ public class RobotContainer {
     chooser.addOption("Red Amp Side", new RedAmpSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
     chooser.addOption("Red Source Side", new RedSourceSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
     chooser.addOption("One Note With Tension", new OneNoteWithTension(drivetrain, intake, shooter, shooterpivot, limelightshooter));
-    chooser.addOption("Two Note Centre W/Tension", new TwoNoteCentreWithTension(drivetrain, intake, shooter, shooterpivot, limelightshooter));
+    chooser.addOption("Two Note Centre W/Tension", new TwoNoteCentreWithTension(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
     Shuffleboard.getTab("Drivetrain").add(chooser);
     
   }
@@ -180,7 +180,7 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return Commands.runOnce(
       () -> drivetrain.updateOdometry())
-    .andThen(drivetrain.ramsete(drivetrain.generateTrajectory(List.of(),new Pose2d(6, 0, new Rotation2d(0)))))
+    .andThen(drivetrain.ramsete(drivetrain.generateTrajectory(List.of(),new Pose2d(-6, 0, new Rotation2d(0)))))
     .andThen(() -> drivetrain.tankDriveVolts(0, 0));
     // return chooser.getSelected();
   }

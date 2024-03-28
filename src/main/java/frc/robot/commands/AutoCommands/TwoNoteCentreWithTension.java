@@ -4,10 +4,16 @@
 
 package frc.robot.commands.AutoCommands;
 
+import java.util.List;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.commands.DriveCommands.CentretoNote;
 import frc.robot.commands.DriveCommands.DriveStraight;
 import frc.robot.commands.IntakeCommands.EjectNote;
 import frc.robot.commands.IntakeCommands.Extend;
@@ -18,6 +24,7 @@ import frc.robot.commands.ShooterCommands.SetShooterTwoPID;
 import frc.robot.commands.ShooterCommands.Shoot;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.LimelightIntake;
 import frc.robot.subsystems.LimelightShooter;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.ShooterPivot;
@@ -27,7 +34,7 @@ import frc.robot.subsystems.ShooterPivot;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class TwoNoteCentreWithTension extends SequentialCommandGroup {
   /** Creates a new TwoNoteCentreWithTension. */
-  public TwoNoteCentreWithTension(Drivetrain drivetrain, Intake intake, Shooter shooter, ShooterPivot shooterpivot, LimelightShooter ls) {
+  public TwoNoteCentreWithTension(Drivetrain drivetrain, Intake intake, Shooter shooter, ShooterPivot shooterpivot, LimelightShooter ls, LimelightIntake li) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
@@ -36,6 +43,7 @@ public class TwoNoteCentreWithTension extends SequentialCommandGroup {
       new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegreesFromRaw() < 38),
 
       //drive and pickup note in front
+      new CentretoNote(drivetrain, li),
       new ParallelCommandGroup(
         new Extend(intake),
         new DriveStraight(drivetrain, 0.45),
@@ -43,11 +51,11 @@ public class TwoNoteCentreWithTension extends SequentialCommandGroup {
       ).until(intake::hasNote),
       new Retract(intake),
 
-      //drive back turn on shooter
-      new ParallelCommandGroup(
-        new DriveStraight(drivetrain, -0.45),
+      //drive back to shooter
+      new ParallelRaceGroup(
+        drivetrain.ramsete(drivetrain.generateTrajectory(List.of(), new Pose2d(6, 0, new Rotation2d(0)))),
         new SetShooterPosition(shooterpivot, ls)//SetShooterTwoPID(shooterpivot, shooterpivot.rawToDegrees(0.909))
-      ).until(() -> drivetrain.getDistance() <= 0),
+      ),
       new ParallelCommandGroup(
         new SetShooterPosition(shooterpivot, ls),
         new Shoot(shooter, 1, 0.95).withTimeout(3),

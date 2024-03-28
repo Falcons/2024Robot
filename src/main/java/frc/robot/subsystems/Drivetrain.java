@@ -233,8 +233,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public Command ramsete(Trajectory trajectory){
-    RamseteCommand ramseteCommand =
-        new RamseteCommand(
+    RamseteCommand ramseteCommand = new RamseteCommand(
           trajectory,
           this::getPose,
           new RamseteController(DriveConstants.kRamseteB, DriveConstants.kRamseteZeta),
