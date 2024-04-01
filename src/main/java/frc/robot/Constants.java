@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 
 public final class Constants {
     public static final class DriveConstants {
@@ -18,6 +19,21 @@ public final class Constants {
         public static final double RPMToMetresPerSecond = 1188.0 * Math.PI / 4979517.6;
 
         public static final int pigeonID = 12;
+
+        public static final double ksVolts = 0;
+        public static final double kvVoltSecondsPerMeter = 0;
+        public static final double kaVoltSecondsSquaredPerMeter = 0;
+
+        public static final double kPVel = 0;
+        
+        public static final double kTrackwidthMeters = 0.683;
+        public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);
+
+        public static final double kMaxSpeedMetersPerSecond = 3;
+        public static final double kMaxAccelerationMetersPerSecondSquared = 1;
+
+        public static final double kRamseteB = 2;
+        public static final double kRamseteZeta = 0.7;
 
     }
 
@@ -43,9 +59,9 @@ public final class Constants {
         public static final double speakerDepth = 0.89;
 
         //public static final double pivotUpperLimit = 54.77; //raw: 0.944
-        public static final Rotation2d pivotUpperLimit = Rotation2d.fromDegrees(57.6);
+        public static final Rotation2d pivotUpperLimit = Rotation2d.fromDegrees(59.1);
         //public static final double pivotLowerLimit = 36.41; //raw: 0.893
-        public static final Rotation2d pivotLowerLimit = Rotation2d.fromDegrees(36.32);
+        public static final Rotation2d pivotLowerLimit = Rotation2d.fromDegrees(36.33);
 
         public static final double degreesToRadians = Math.PI / 180.0;
         public static final double rotationsToDegrees = 360;

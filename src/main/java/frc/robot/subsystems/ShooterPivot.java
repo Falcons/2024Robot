@@ -23,9 +23,9 @@ import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -51,13 +51,16 @@ public class ShooterPivot extends SubsystemBase {
 
   private double pivotFFValue, lastPivotVelocitySetpoint;
 
-  private final SysIdRoutine pivotCharacterizer;
-  // Mutable holder for unit-safe voltage values, persisted to avoid reallocation.
+  // Mutable holder for unit-safe values, persisted to avoid reallocation.
   private final MutableMeasure<Voltage> m_appliedVoltage = mutable(Volts.of(0));
-  // Mutable holder for unit-safe linear distance values, persisted to avoid reallocation.
   private final MutableMeasure<Angle> m_angle = mutable(Rotations.of(0));
-  // Mutable holder for unit-safe linear velocity values, persisted to avoid reallocation.
   private final MutableMeasure<Velocity<Angle>> m_velocity = mutable(RotationsPerSecond.of(0));
+
+  private final SysIdRoutine.Mechanism pivotmechanism = new SysIdRoutine.Mechanism(this::voltageDrive, this::log, this);
+
+  private final SysIdRoutine pivotCharacterizer;
+
+  //private final SysIdRoutine oldpivotCharacterizer;
 
   private Rotation2d pivotGoal;
   private final Timer timer;
@@ -67,6 +70,7 @@ public class ShooterPivot extends SubsystemBase {
   public ShooterPivot() {
     pivot = new CANSparkMax(ShooterConstants.pivotID,  MotorType.kBrushless);
     pivot.restoreFactoryDefaults();
+    pivot.setInverted(true);
     pivot.setIdleMode(IdleMode.kBrake);
     pivot.setSmartCurrentLimit(40);
 
@@ -104,8 +108,10 @@ public class ShooterPivot extends SubsystemBase {
 
     timer = new Timer();
     //timer.start();
-
-    pivotCharacterizer = 
+    
+    pivotCharacterizer = new SysIdRoutine(new SysIdRoutine.Config(), pivotmechanism);
+/*
+    oldpivotCharacterizer = 
       new SysIdRoutine(
           // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
           new SysIdRoutine.Config(),
@@ -119,9 +125,8 @@ public class ShooterPivot extends SubsystemBase {
               log -> {
                 // Record a frame for the shooter motor.
                 log.motor("shooter-wheel")
-                    .voltage(
-                        m_appliedVoltage.mut_replace(
-                            pivot.get() * RobotController.getBatteryVoltage(), Volts))
+                    .voltage(m_appliedVoltage.mut_replace(
+                            pivot.getAppliedOutput() * pivot.getBusVoltage(), Volts))
                     .angularPosition(m_angle.mut_replace(getRadiansFromRaw(), Radians))
                     .angularVelocity(
                         m_velocity.mut_replace(thruBore.getVelocity(), RadiansPerSecond));
@@ -129,7 +134,23 @@ public class ShooterPivot extends SubsystemBase {
               // Tell SysId to make generated commands require this subsystem, suffix test state in
               // WPILog with this subsystem's name ("shooter")
               this));
+  */
 
+  }
+
+  public void voltageDrive (Measure<Voltage> volts) {
+    pivot.setVoltage(volts.in(Volts));
+  }
+
+  public void log(SysIdRoutineLog log) {
+    double voltage = pivot.getAppliedOutput() * pivot.getBusVoltage();
+    double angularPos = thruBore.getPosition();
+    double angularVel = thruBore.getVelocity();
+
+    log.motor("shooterpivot")
+      .voltage(m_appliedVoltage.mut_replace(voltage, Volts))
+      .angularPosition(m_angle.mut_replace(angularPos, Radians))
+      .angularVelocity(m_velocity.mut_replace(angularVel, RadiansPerSecond));
   }
 
   public double getRadiansFromRaw() {
@@ -202,20 +223,20 @@ public class ShooterPivot extends SubsystemBase {
     pivotFFValue = pivotFF.calculate(pivotSetpoint.position, pivotSetpoint.velocity);
     //pivotPID.setReference(pivotSetpoint.position, ControlType.kPosition, 0, pivotFFValue, ArbFFUnits.kVoltage);
 */
-    SmartDashboard.putNumber("Pivot Raw", thruBore.getPosition());
-    SmartDashboard.putNumber("Pivot Degrees", getDegreesFromRaw());
-    SmartDashboard.putNumber("Pivot Output", pivot.getAppliedOutput());
+    SmartDashboard.putNumber("Pivot/Pivot Raw", thruBore.getPosition());
+    SmartDashboard.putNumber("Pivot/Pivot Degrees", getDegreesFromRaw());
+    SmartDashboard.putNumber("Pivot/Pivot Radians", getRadiansFromRaw());
 
-    SmartDashboard.putBoolean("Upper Pivot Soft", getSoftUpperLimit());
-    SmartDashboard.putBoolean("Lower Pivot Soft", getSoftLowerLimit());
+    SmartDashboard.putBoolean("Pivot/Upper Pivot Soft", getSoftUpperLimit());
+    SmartDashboard.putBoolean("Pivot/Lower Pivot Soft", getSoftLowerLimit());
   }
 
   public Command Up(double speed) {
-      return this.startEnd(() -> this.setSpeed(-speed), () -> this.stopShooterPivot());
+      return this.startEnd(() -> this.setSpeed(speed), () -> this.stopShooterPivot());
   }
 
   public Command Down(double speed) {
-    return this.startEnd(() -> this.setSpeed(speed), () -> this.stopShooterPivot());
+    return this.startEnd(() -> this.setSpeed(-speed), () -> this.stopShooterPivot());
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {

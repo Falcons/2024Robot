@@ -6,7 +6,6 @@ package frc.robot.commands.ShooterCommands;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.ShooterConstants;
@@ -60,7 +59,7 @@ public class SetShooterTwoPID extends Command {
       speed = 0;
     }
 
-    shooterpivot.setVoltage(-speed);
+    shooterpivot.setVoltage(speed);
 
     SmartDashboard.putBoolean("At Setpoint", pidToSetpoint.atSetpoint());
     SmartDashboard.putNumber("Error", pidToSetpoint.getPositionError());

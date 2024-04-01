@@ -33,8 +33,17 @@ public class CentretoSpeaker extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double leftSpeed = -pid.calculate(limelightShooter.getX(), 0);
-    double rightSpeed = pid.calculate(limelightShooter.getX(), 0);
+    double leftSpeed;
+    double rightSpeed;
+
+    if (limelightShooter.getDoubleEntry("tv") == 1.0) {
+      System.out.println("Speaker in view");
+      leftSpeed = -pid.calculate(limelightShooter.getX(), 0);
+      rightSpeed = pid.calculate(limelightShooter.getX(), 0);
+    } else {
+      leftSpeed = 0;
+      rightSpeed = 0;
+    }
 
     drivetrain.tankDrive(leftSpeed, rightSpeed);
   }

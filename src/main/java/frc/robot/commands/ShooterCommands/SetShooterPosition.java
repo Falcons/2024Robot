@@ -63,8 +63,7 @@ public class SetShooterPosition extends Command {
     //double angle = shooterpivot.getHashValue(pos);
 
     //speed = (pid.calculate(shooterpivot.getThruBore(), angle));
-    shooterpivot.setVoltage(-PIDOutput);
-    System.out.println(speed);
+    shooterpivot.setVoltage(PIDOutput);
   }
 
 

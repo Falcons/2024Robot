@@ -44,8 +44,4 @@ public class LimelightIntake extends SubsystemBase {
   public double getID() {
       return getDoubleEntry("tid");
   }
-
-  public double[] getBotpose() {
-    return getArrayEntry("botpose");
-  }
 }

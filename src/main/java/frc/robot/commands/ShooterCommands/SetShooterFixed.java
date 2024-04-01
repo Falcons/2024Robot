@@ -47,7 +47,7 @@ public class SetShooterFixed extends Command {
       speed = 0;
     }
 
-    shooterpivot.setVoltage(-speed);
+    shooterpivot.setVoltage(speed);
   } //pid.calculate(shooterpivot.getThruBore(), position)
 
   // Called once the command ends or is interrupted.

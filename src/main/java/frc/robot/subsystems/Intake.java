@@ -86,9 +86,9 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Intake Thru Bore", intakeThruBore.getPosition());
-    SmartDashboard.putNumber("TOF", tof.getRange());
-    SmartDashboard.putBoolean("Has Note", hasNote());
+    SmartDashboard.putNumber("Intake/Intake Thru Bore", intakeThruBore.getPosition());
+    SmartDashboard.putNumber("Intake/TOF", tof.getRange());
+    SmartDashboard.putBoolean("Intake/Has Note", hasNote());
     //SmartDashboard.putString("Intake", getRetractedorExtended());
   }
 
