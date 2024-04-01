@@ -153,7 +153,7 @@ public class RobotContainer {
       .andThen(new Retract(intake)));
       
 
-    // Shooterpivot
+    // Shooterpivota
 
     //Shooter adjustment
     driver.povUp().onTrue(new SetShooterTwoPID(shooterpivot, shooterpivot.rawToDegrees(0.95)));
