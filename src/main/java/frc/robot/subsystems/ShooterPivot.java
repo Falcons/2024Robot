@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems;
 
-import java.util.TreeMap;
-
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.SparkPIDController;
@@ -65,8 +63,6 @@ public class ShooterPivot extends SubsystemBase {
   private Rotation2d pivotGoal;
   private final Timer timer;
 
-  TreeMap<Double, Double> shooterPivotMap = new TreeMap<Double, Double>();
-
   public ShooterPivot() {
     pivot = new CANSparkMax(ShooterConstants.pivotID,  MotorType.kBrushless);
     pivot.restoreFactoryDefaults();
@@ -75,10 +71,9 @@ public class ShooterPivot extends SubsystemBase {
     pivot.setSmartCurrentLimit(40);
 
     thruBore = pivot.getAbsoluteEncoder();
-    //thruBore.setPositionConversionFactor(ShooterConstants.rotationsToRadians);
-    //thruBore.setVelocityConversionFactor(ShooterConstants.rotationsToRadians);
-    //thruBore.setVelocityConversionFactor(ShooterConstants.rotationsToRadians / 60.0);
-    //thruBore.setZeroOffset(ShooterConstants.pivotZeroOffset.getRadians());
+    thruBore.setPositionConversionFactor(ShooterConstants.rotationsToRadians);
+    thruBore.setVelocityConversionFactor(ShooterConstants.rotationsToRadians);
+    thruBore.setZeroOffset(ShooterConstants.pivotZeroOffset.getRadians());
 
     pivotPID = pivot.getPIDController();
     pivotPID.setP(ShooterConstants.kP);
@@ -110,32 +105,6 @@ public class ShooterPivot extends SubsystemBase {
     //timer.start();
     
     pivotCharacterizer = new SysIdRoutine(new SysIdRoutine.Config(), pivotmechanism);
-/*
-    oldpivotCharacterizer = 
-      new SysIdRoutine(
-          // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
-          new SysIdRoutine.Config(),
-          new SysIdRoutine.Mechanism(
-              // Tell SysId how to plumb the driving voltage to the motor(s).
-              (Measure<Voltage> volts) -> {
-                pivot.setVoltage(volts.in(Volts));
-              },
-              // Tell SysId how to record a frame of data for each motor on the mechanism being
-              // characterized.
-              log -> {
-                // Record a frame for the shooter motor.
-                log.motor("shooter-wheel")
-                    .voltage(m_appliedVoltage.mut_replace(
-                            pivot.getAppliedOutput() * pivot.getBusVoltage(), Volts))
-                    .angularPosition(m_angle.mut_replace(getRadiansFromRaw(), Radians))
-                    .angularVelocity(
-                        m_velocity.mut_replace(thruBore.getVelocity(), RadiansPerSecond));
-              },
-              // Tell SysId to make generated commands require this subsystem, suffix test state in
-              // WPILog with this subsystem's name ("shooter")
-              this));
-  */
-
   }
 
   public void voltageDrive (Measure<Voltage> volts) {
@@ -152,18 +121,23 @@ public class ShooterPivot extends SubsystemBase {
       .angularPosition(m_angle.mut_replace(angularPos, Radians))
       .angularVelocity(m_velocity.mut_replace(angularVel, RadiansPerSecond));
   }
-
+/*
   public double getRadiansFromRaw() {
     return thruBore.getPosition() * 2 * Math.PI - 4.9754;
   }
   public double getDegreesFromRaw() {
     return thruBore.getPosition() * 360 - 285.07;
   }
+  public double rawToRadians(double raw) {
+    return raw * 2 * Math.PI - 4.9754;
+  }
+*/
   public double rawToDegrees(double raw) {
     return raw * 360 - 285.07;
   }
-  public double rawToRadians(double raw) {
-    return raw * 2 * Math.PI - 4.9754;
+
+  public double getDegrees() {
+    return thruBore.getPosition() * ShooterConstants.radiansToDegrees;
   }
 
   public void setPivotAngle(Rotation2d angle) {
@@ -197,11 +171,12 @@ public class ShooterPivot extends SubsystemBase {
   }
 
   public boolean getSoftUpperLimit() {
-    return (getDegreesFromRaw() > ShooterConstants.pivotUpperLimit.getDegrees());
+    return (thruBore.getPosition() > ShooterConstants.pivotUpperLimit.getRadians());
+    //return (getDegreesFromRaw() > ShooterConstants.pivotUpperLimit.getDegrees());
   }
 
   public boolean getSoftLowerLimit() {
-    return (getDegreesFromRaw() < ShooterConstants.pivotLowerLimit.getDegrees());
+    return (thruBore.getPosition()< ShooterConstants.pivotLowerLimit.getRadians());
   }
 
   public void setBrakeMode() {
@@ -224,8 +199,9 @@ public class ShooterPivot extends SubsystemBase {
     //pivotPID.setReference(pivotSetpoint.position, ControlType.kPosition, 0, pivotFFValue, ArbFFUnits.kVoltage);
 */
     SmartDashboard.putNumber("Pivot/Pivot Raw", thruBore.getPosition());
-    SmartDashboard.putNumber("Pivot/Pivot Degrees", getDegreesFromRaw());
-    SmartDashboard.putNumber("Pivot/Pivot Radians", getRadiansFromRaw());
+    SmartDashboard.putNumber("Pivot/Pivot Degrees", getDegrees());
+    SmartDashboard.putNumber("Pivot/Velocity", thruBore.getVelocity());
+    SmartDashboard.putNumber("Pivot/Volts", pivot.getAppliedOutput() * pivot.getBusVoltage());
 
     SmartDashboard.putBoolean("Pivot/Upper Pivot Soft", getSoftUpperLimit());
     SmartDashboard.putBoolean("Pivot/Lower Pivot Soft", getSoftLowerLimit());

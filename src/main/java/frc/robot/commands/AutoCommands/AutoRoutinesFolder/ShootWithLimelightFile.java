@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.IntakeCommands.EjectNote;
-import frc.robot.commands.ShooterCommands.SetShooterPosition;
+import frc.robot.commands.ShooterCommands.SetShooterLL;
 import frc.robot.commands.ShooterCommands.Shoot;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
@@ -26,7 +26,7 @@ public class ShootWithLimelightFile extends ParallelRaceGroup {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new SetShooterPosition(shooterpivot, ls),
+      new SetShooterLL(shooterpivot, ls),
       new ParallelCommandGroup(
           new Shoot(shooter, 1, 0.95).withTimeout(3),
           new SequentialCommandGroup(

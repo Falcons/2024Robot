@@ -28,6 +28,10 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
@@ -42,7 +46,9 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.LimelightHelpers;
@@ -64,6 +70,9 @@ public class Drivetrain extends SubsystemBase {
 
   private final DifferentialDriveOdometry m_odometry;
   private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(0.683);
+  public RamseteCommand ramseteCommand;
+  public Trajectory exampleTrajectory;
+  public Trajectory closeNoteBlue;
 
   private final Field2d field = new Field2d();
 
@@ -137,9 +146,83 @@ public class Drivetrain extends SubsystemBase {
     gyro.setYaw(0);
 
     m_odometry = new DifferentialDriveOdometry(gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition());
+    m_odometry.resetPosition(new Rotation2d(), 0, 0, DriveConstants.blueSubWooferCentre);
+
+    var autoVoltageConstraint =
+        new DifferentialDriveVoltageConstraint(
+            new SimpleMotorFeedforward(
+                DriveConstants.ksVolts,
+                DriveConstants.kvVoltSecondsPerMeter,
+                DriveConstants.kaVoltSecondsSquaredPerMeter),
+            DriveConstants.kDriveKinematics,
+            10);
+    
+    TrajectoryConfig config =
+        new TrajectoryConfig(
+                DriveConstants.kMaxSpeedMetersPerSecond,
+                DriveConstants.kMaxAccelerationMetersPerSecondSquared)
+            // Add kinematics to ensure max speed is actually obeyed
+            .setKinematics(DriveConstants.kDriveKinematics)
+            // Apply the voltage constraint
+            .addConstraint(autoVoltageConstraint);
+    
+    exampleTrajectory =
+        TrajectoryGenerator.generateTrajectory(
+            // Start at the origin facing the +X direction
+            new Pose2d(0, 0, new Rotation2d(0)),
+            // Pass through these two interior waypoints, making an 's' curve path
+            List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+            // End 3 meters straight ahead of where we started, facing forward
+            new Pose2d(3, 0, new Rotation2d(0)),
+            // Pass config
+            config);
+    
+    closeNoteBlue =
+        TrajectoryGenerator.generateTrajectory(
+            // Start at the origin facing the +X direction
+            DriveConstants.blueSubWooferCentre,
+            // Pass through these two interior waypoints, making an 's' curve path
+            List.of(
+              DriveConstants.blueCentreNote.getTranslation(), 
+              DriveConstants.blueCloseAmp.getTranslation(),
+              DriveConstants.blueCloseSource.getTranslation()),
+            // End 3 meters straight ahead of where we started, facing forward
+            DriveConstants.blueSubWooferCentre,
+            // Pass config
+            config);
+    
+    ramseteCommand =
+            new RamseteCommand(
+                closeNoteBlue,
+                this::getPose,
+                new RamseteController(DriveConstants.kRamseteB, DriveConstants.kRamseteZeta),
+                new SimpleMotorFeedforward(
+                    DriveConstants.ksVolts,
+                    DriveConstants.kvVoltSecondsPerMeter,
+                    DriveConstants.kaVoltSecondsSquaredPerMeter),
+                DriveConstants.kDriveKinematics,
+                this::getWheelSpeeds,
+                new PIDController(DriveConstants.kPVel, 0, 0),
+                new PIDController(DriveConstants.kPVel, 0, 0),
+                // RamseteCommand passes volts to the callback
+                this::tankDriveVolts,
+                this);
 
     SmartDashboard.putData("Drive/Field", field);
-    SmartDashboard.putData("Drive/Gyro", gyro); 
+    SmartDashboard.putData("Drive/Gyro", gyro);
+    field.getObject("Note Trajectory").setTrajectory(closeNoteBlue);
+/*
+    field.getObject("Close Notes").setPoses(List.of(
+      DriveConstants.blueCloseAmp, 
+      DriveConstants.blueCentreNote,
+      DriveConstants.blueCloseSource));
+*/
+    field.getObject("Far Notes").setPoses(List.of(
+      DriveConstants.blueFarAmp1, 
+      DriveConstants.blueFarAmp2,
+      DriveConstants.blueFarCentre,
+      DriveConstants.blueFarSource2,
+      DriveConstants.blueFarSource1));
   }
   // Tells SysID how to pass voltage to motor controllers
   public void voltageDrive (Measure<Voltage> volts) {
@@ -263,6 +346,13 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putNumber("Drive/Distance", getDistance());
     SmartDashboard.putNumber("Drive/Gyro Angle", gyro.getAngle());
 
+    SmartDashboard.putNumber("Drive/Left Position", frontLeftEncoder.getPosition());
+    SmartDashboard.putNumber("Drive/Right Position", frontRightEncoder.getPosition());
+    SmartDashboard.putNumber("Drive/Left Velocity", frontLeftEncoder.getVelocity());
+    SmartDashboard.putNumber("Drive/Right Velocity", frontLeftEncoder.getVelocity());
+    SmartDashboard.putNumber("Drive/X", m_odometry.getPoseMeters().getX());
+    SmartDashboard.putNumber("Drive/Y", m_odometry.getPoseMeters().getY());
+
     //updateOdometry();
     m_odometry.update(gyro.getRotation2d(),
       frontLeftEncoder.getPosition(),
@@ -277,6 +367,10 @@ public class Drivetrain extends SubsystemBase {
 
   public double getHeading() {
     return gyro.getRotation2d().getDegrees();
+  }
+
+  public double getTurnRate() {
+    return -gyro.getRate();
   }
 
   public Pose2d getPose() {
@@ -306,27 +400,4 @@ public class Drivetrain extends SubsystemBase {
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return m_sysIdRoutine.dynamic(direction);
   }
-  /*
-   * log -> {
-                // Record a frame for the left motors.  Since these share an encoder, we consider
-                // the entire group to be one motor.
-                log.motor("drive-left")
-                    .voltage(
-                        m_appliedVoltage.mut_replace(
-                            frontLeft.get() * RobotController.getBatteryVoltage(), Volts))
-                    .linearPosition(m_distance.mut_replace(frontLeftEncoder.getPosition(), Meters))
-                    .linearVelocity(
-                        m_velocity.mut_replace(frontLeftEncoder.getVelocity(), MetersPerSecond));
-                // Record a frame for the right motors.  Since these share an encoder, we consider
-                // the entire group to be one motor.
-                log.motor("drive-right")
-                    .voltage(
-                        m_appliedVoltage.mut_replace(
-                            frontRight.get() * RobotController.getBatteryVoltage(), Volts))
-                    .linearPosition(m_distance.mut_replace(frontRightEncoder.getPosition(), Meters))
-                    .linearVelocity(
-                        m_velocity.mut_replace(frontRightEncoder.getVelocity(), MetersPerSecond));
-              }
-   */
-  
 }

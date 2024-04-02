@@ -4,25 +4,13 @@
 
 package frc.robot;
 
-import java.util.List;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.RamseteController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -45,7 +33,8 @@ import frc.robot.commands.DriveCommands.CentretoSpeaker;
 import frc.robot.commands.IntakeCommands.Extend;
 import frc.robot.commands.IntakeCommands.Retract;
 import frc.robot.commands.ShooterCommands.Down;
-import frc.robot.commands.ShooterCommands.SetShooterPosition;
+import frc.robot.commands.ShooterCommands.SetShooterFF;
+import frc.robot.commands.ShooterCommands.SetShooterLL;
 import frc.robot.commands.ShooterCommands.SetShooterShuffleboard;
 import frc.robot.commands.ShooterCommands.SetShooterTwoPID;
 import frc.robot.commands.ShooterCommands.Shoot;
@@ -105,6 +94,7 @@ public class RobotContainer {
     chooser.addOption("Blue Source w/Routines", new BlueSourceRoutines(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
 
     Shuffleboard.getTab("Auto").add(chooser);
+    SmartDashboard.putData("Update Odom Blue Centre", new InstantCommand(() -> drivetrain.resetOdometry(DriveConstants.blueSubWooferCentre)).ignoringDisable(true));
     SmartDashboard.putData("Drive", drivetrain);
     SmartDashboard.putData("Intake", intake);
     SmartDashboard.putData("Pivot", shooterpivot);
@@ -117,6 +107,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+
     //Wheel Testing
 /*
     driver.a().whileTrue(drivetrain.runFrontLeft());
@@ -129,7 +120,7 @@ public class RobotContainer {
     //centring
 
     driver.leftBumper().onTrue(new CentretoNote(drivetrain, limelightintake));
-    driver.rightBumper().whileTrue(new CentretoSpeaker(drivetrain, limelightshooter));
+    driver.rightBumper().onTrue(new CentretoSpeaker(drivetrain, limelightshooter));
 
     //configs
 
@@ -156,20 +147,21 @@ public class RobotContainer {
     // Shooterpivot
 
     //Shooter adjustment
-    driver.povUp().onTrue(new SetShooterTwoPID(shooterpivot, shooterpivot.rawToDegrees(0.95)));
+    driver.povUp().onTrue(new SetShooterTwoPID(shooterpivot, 56.93));
     driver.povRight().onTrue(new SetShooterTwoPID(shooterpivot, 42));
     driver.povDown().onTrue(new SetShooterTwoPID(shooterpivot, 36.3));
 
-    operator.povLeft().whileTrue(new SetShooterPosition(shooterpivot, limelightshooter));
+    operator.povLeft().whileTrue(new SetShooterLL(shooterpivot, limelightshooter));
     operator.povRight().whileTrue(new SetShooterShuffleboard(shooterpivot));
-    
+    operator.y().whileTrue(new SetShooterFF(shooterpivot));
+    operator.back().onTrue(new InstantCommand(() -> shooterpivot.setVoltage(0), shooterpivot));
+
     //Amp Mode
+  /*
     operator.leftBumper().whileTrue(
       new SetShooterTwoPID(shooterpivot, 64)
       .alongWith(shooter.Shoot(0.10, 0.10))); //0.1325
-
-    //Shooter instant
-    //operator.y().whileTrue(shooter.Shoot(1, 0.95));
+  */
     //shooter variable
     operator.leftTrigger(0.3).whileTrue(shooter.Shoot(0.5, 0.5).unless(operator.leftTrigger(0.9)));
     operator.leftTrigger(0.9).whileTrue(shooter.Shoot(1, 0.95));
@@ -180,7 +172,7 @@ public class RobotContainer {
 
 
     //Shooter Characterization
-  /*
+/*
     operator.a().and(operator.rightBumper())
       .onTrue(shooterpivot.sysIdQuasistatic(Direction.kForward)
       .until(shooterpivot::getSoftUpperLimit));
@@ -219,57 +211,12 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    var autoVoltageConstraint =
-        new DifferentialDriveVoltageConstraint(
-            new SimpleMotorFeedforward(
-                DriveConstants.ksVolts,
-                DriveConstants.kvVoltSecondsPerMeter,
-                DriveConstants.kaVoltSecondsSquaredPerMeter),
-            DriveConstants.kDriveKinematics,
-            10);
 
-    TrajectoryConfig config =
-        new TrajectoryConfig(
-                DriveConstants.kMaxSpeedMetersPerSecond,
-                DriveConstants.kMaxAccelerationMetersPerSecondSquared)
-            // Add kinematics to ensure max speed is actually obeyed
-            .setKinematics(DriveConstants.kDriveKinematics)
-            // Apply the voltage constraint
-            .addConstraint(autoVoltageConstraint);
-    
-    Trajectory exampleTrajectory =
-        TrajectoryGenerator.generateTrajectory(
-            // Start at the origin facing the +X direction
-            new Pose2d(0, 0, new Rotation2d(0)),
-            // Pass through these two interior waypoints, making an 's' curve path
-            List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
-            // End 3 meters straight ahead of where we started, facing forward
-            new Pose2d(3, 0, new Rotation2d(0)),
-            // Pass config
-            config);
+    Command runTraj = Commands.runOnce(() -> drivetrain.resetOdometry(drivetrain.closeNoteBlue.getInitialPose()))
+      .andThen(drivetrain.ramseteCommand)
+      .andThen(Commands.runOnce(() -> drivetrain.tankDriveVolts(0, 0)));
 
-    RamseteCommand ramseteCommand =
-        new RamseteCommand(
-            exampleTrajectory,
-            drivetrain::getPose,
-            new RamseteController(DriveConstants.kRamseteB, DriveConstants.kRamseteZeta),
-            new SimpleMotorFeedforward(
-                DriveConstants.ksVolts,
-                DriveConstants.kvVoltSecondsPerMeter,
-                DriveConstants.kaVoltSecondsSquaredPerMeter),
-            DriveConstants.kDriveKinematics,
-            drivetrain::getWheelSpeeds,
-            new PIDController(DriveConstants.kPVel, 0, 0),
-            new PIDController(DriveConstants.kPVel, 0, 0),
-            // RamseteCommand passes volts to the callback
-            drivetrain::tankDriveVolts,
-            drivetrain);
-
-    Command runTraj = Commands.runOnce(() -> drivetrain.resetOdometry(exampleTrajectory.getInitialPose()))
-    .andThen(ramseteCommand)
-    .andThen(Commands.runOnce(() -> drivetrain.tankDriveVolts(0, 0)));
-
-    //return runTraj;
-    return chooser.getSelected();
+    return runTraj;
+    //return chooser.getSelected();
   }
 }

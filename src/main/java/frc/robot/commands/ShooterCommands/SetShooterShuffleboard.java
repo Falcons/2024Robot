@@ -8,6 +8,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.ShooterPivot;
 
 public class SetShooterShuffleboard extends Command {
@@ -17,7 +18,7 @@ public class SetShooterShuffleboard extends Command {
   public SetShooterShuffleboard(ShooterPivot shooterpivot) {
     this.shooterpivot = shooterpivot;
     this.pidToSetpoint = new PIDController(0.3, 0, 0);
-    this.armFF = new ArmFeedforward(0, 0.35, 1.95, 0.02);
+    this.armFF = new ArmFeedforward(0, 0.75, 0);
     addRequirements(shooterpivot);
   }
 
@@ -28,17 +29,17 @@ public class SetShooterShuffleboard extends Command {
     shooterpivot.setBrakeMode();
     pidToSetpoint.reset();
     pidToSetpoint.setTolerance(1);
+    SmartDashboard.putNumber("A", 36.33);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double angle = SmartDashboard.getNumber("Pivot/AngleSlider", 36.3);
-    SmartDashboard.putNumber("Pivot/AngleSlider", angle);
+    double angle = SmartDashboard.getNumber("A", 36.33);
     pidToSetpoint.setSetpoint(angle);
-    //double FFOutput = armFF.calculate(shooterpivot.getDegreesFromRaw() * ShooterConstants.degreesToRadians, 0);
-    double PIDToSetpointOutput = pidToSetpoint.calculate(shooterpivot.getDegreesFromRaw());
-    //double PIDFixedOutput = pidFixed.calculate(shooterpivot.getDegreesFromRaw(), angle);
+    double FFOutput = armFF.calculate(shooterpivot.getThruBore(), 0);
+    double PIDToSetpointOutput = pidToSetpoint.calculate(shooterpivot.getThruBore() * ShooterConstants.radiansToDegrees);
+
     double speed;
 
     if (pidToSetpoint.getPositionError() < 0) {
@@ -46,6 +47,8 @@ public class SetShooterShuffleboard extends Command {
     } else {
        speed = PIDToSetpointOutput;
     }
+
+    speed += FFOutput;
 
     if (shooterpivot.getSoftUpperLimit() && speed > 0 ) {
       speed = 0;

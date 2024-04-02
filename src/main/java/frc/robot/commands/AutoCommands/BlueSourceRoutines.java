@@ -32,7 +32,7 @@ public class BlueSourceRoutines extends SequentialCommandGroup {
       //drive out and centre to note
       new DriveStraight(drivetrain, 0.5).until(() -> drivetrain.getDistance() > 0.25),
       new ParallelRaceGroup(
-        new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegreesFromRaw() < 43).withTimeout(0.75),
+        new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegrees() < 43).withTimeout(0.75),
         new RotateAngle(drivetrain, -55).withTimeout(0.75)
       ),
       new CentretoNote(drivetrain, li),

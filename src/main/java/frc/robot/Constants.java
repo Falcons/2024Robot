@@ -4,8 +4,10 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.util.Units;
 
 public final class Constants {
     public static final class DriveConstants {
@@ -20,21 +22,35 @@ public final class Constants {
 
         public static final int pigeonID = 12;
 
-        public static final double ksVolts = 0;
-        public static final double kvVoltSecondsPerMeter = 0;
-        public static final double kaVoltSecondsSquaredPerMeter = 0;
+        public static final double ksVolts = 0.21888;
+        public static final double kvVoltSecondsPerMeter = 2.6459;
+        public static final double kaVoltSecondsSquaredPerMeter = 0.62854;
 
-        public static final double kPVel = 0;
+        public static final double kPVel = 3.739; //0.27668
         
         public static final double kTrackwidthMeters = 0.683;
         public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);
 
-        public static final double kMaxSpeedMetersPerSecond = 3;
-        public static final double kMaxAccelerationMetersPerSecondSquared = 1;
+        public static final double kMaxSpeedMetersPerSecond = 1;
+        public static final double kMaxAccelerationMetersPerSecondSquared = 0.25;
 
         public static final double kRamseteB = 2;
         public static final double kRamseteZeta = 0.7;
 
+        public static final double kRobotLength = Units.inchesToMeters(37.5);
+
+        public static final Pose2d blueSubWooferCentre = new Pose2d(Units.inchesToMeters(36.37) + kRobotLength / 2.0, Units.inchesToMeters(218.42), new Rotation2d());
+        public static final Pose2d blueSubWooferAmpSide = new Pose2d(Units.inchesToMeters(36.37), Units.inchesToMeters(218.42), new Rotation2d());
+
+        public static final Pose2d blueCloseAmp = new Pose2d(Units.inchesToMeters(114.0), Units.inchesToMeters(275.42), new Rotation2d());
+        public static final Pose2d blueCentreNote = new Pose2d(Units.inchesToMeters(114.0), Units.inchesToMeters(218.42), new Rotation2d());
+        public static final Pose2d blueCloseSource = new Pose2d(Units.inchesToMeters(114.0), Units.inchesToMeters(161.42), new Rotation2d());
+
+        public static final Pose2d blueFarAmp1 = new Pose2d(Units.inchesToMeters(324.6), Units.inchesToMeters(293.64), new Rotation2d());
+        public static final Pose2d blueFarAmp2 = new Pose2d(Units.inchesToMeters(324.6), Units.inchesToMeters(227.64), new Rotation2d());
+        public static final Pose2d blueFarCentre = new Pose2d(Units.inchesToMeters(324.6), Units.inchesToMeters(161.64), new Rotation2d());
+        public static final Pose2d blueFarSource2 = new Pose2d(Units.inchesToMeters(324.6), Units.inchesToMeters(95.64), new Rotation2d());
+        public static final Pose2d blueFarSource1 = new Pose2d(Units.inchesToMeters(324.6), Units.inchesToMeters(29.64), new Rotation2d());
     }
 
     public static final class IntakeConstants {
@@ -64,6 +80,7 @@ public final class Constants {
         public static final Rotation2d pivotLowerLimit = Rotation2d.fromDegrees(36.33);
 
         public static final double degreesToRadians = Math.PI / 180.0;
+        public static final double radiansToDegrees = 180.0 / Math.PI;
         public static final double rotationsToDegrees = 360;
         public static final double rotationsToRadians = 2 * Math.PI;
         public static final Rotation2d pivotZeroOffset = Rotation2d.fromDegrees(285.07);

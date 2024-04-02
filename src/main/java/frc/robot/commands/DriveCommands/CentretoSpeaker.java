@@ -17,7 +17,7 @@ public class CentretoSpeaker extends Command {
   public CentretoSpeaker(Drivetrain d, LimelightShooter ls) {
     this.drivetrain = d;
     this.limelightShooter = ls;
-    this.pid = new PIDController(0.032, 0.018, 0);
+    this.pid = new PIDController(0.01, 0.01, 0);
     addRequirements(drivetrain, limelightShooter);
   }
 
@@ -37,7 +37,6 @@ public class CentretoSpeaker extends Command {
     double rightSpeed;
 
     if (limelightShooter.getDoubleEntry("tv") == 1.0) {
-      System.out.println("Speaker in view");
       leftSpeed = -pid.calculate(limelightShooter.getX(), 0);
       rightSpeed = pid.calculate(limelightShooter.getX(), 0);
     } else {

@@ -15,7 +15,7 @@ import frc.robot.commands.DriveCommands.RotateAngle;
 import frc.robot.commands.IntakeCommands.EjectNote;
 import frc.robot.commands.IntakeCommands.Extend;
 import frc.robot.commands.IntakeCommands.Retract;
-import frc.robot.commands.ShooterCommands.SetShooterPosition;
+import frc.robot.commands.ShooterCommands.SetShooterLL;
 import frc.robot.commands.ShooterCommands.SetShooterTwoPID;
 import frc.robot.commands.ShooterCommands.Shoot;
 import frc.robot.subsystems.Drivetrain;
@@ -39,7 +39,7 @@ public class RedAmpSideTwoNote extends SequentialCommandGroup {
       //new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegreesFromRaw() < 41),
       new DriveStraight(drivetrain, 0.5).until(() -> drivetrain.getDistance() > 0.5),
       new ParallelRaceGroup(
-        new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegreesFromRaw() < 43).withTimeout(0.75),
+        new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegrees() < 43).withTimeout(0.75),
         new RotateAngle(drivetrain, -55).withTimeout(0.75)
       ),
 
@@ -58,7 +58,7 @@ public class RedAmpSideTwoNote extends SequentialCommandGroup {
       new DriveStraight(drivetrain, -0.5).until(() -> drivetrain.getDistance() < -0.7),
       //shoot
       new ParallelRaceGroup(
-        new SetShooterPosition(shooterpivot, ls),
+        new SetShooterLL(shooterpivot, ls),
         new ParallelCommandGroup(
           new Shoot(shooter, 1, 0.95).withTimeout(3),
           new SequentialCommandGroup(

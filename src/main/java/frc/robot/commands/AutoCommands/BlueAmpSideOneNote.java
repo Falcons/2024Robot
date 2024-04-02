@@ -27,14 +27,14 @@ public class BlueAmpSideOneNote extends SequentialCommandGroup {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new SetShooterTwoPID(shooterpivot, 56.93).until(() -> shooterpivot.getDegreesFromRaw() > 56),
+      new SetShooterTwoPID(shooterpivot, 56.93).until(() -> shooterpivot.getDegrees() > 56),
       new ParallelCommandGroup(
         new Shoot(shooter, 1, 0.95).withTimeout(3),
         new SequentialCommandGroup(
           new WaitCommand(2), 
           new EjectNote(intake, 1).withTimeout(1))
           ),
-      new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegreesFromRaw() < 38),
+      new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegrees() < 38),
       new DriveStraight(drivetrain, 0.5).until(() -> drivetrain.getDistance() > 0.25),
       new RotateAngle(drivetrain, 55).withTimeout(1),
       new DriveStraight(drivetrain, 0.5).withTimeout(1.5)

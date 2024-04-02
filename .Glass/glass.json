@@ -1,0 +1,60 @@
+{
+  "NetworkTables": {
+    "transitory": {
+      "SmartDashboard": {
+        "Drive": {
+          "Field": {
+            "open": true
+          },
+          "open": true
+        },
+        "open": true
+      }
+    },
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Auto/SendableChooser[0]": "String Chooser",
+      "/SmartDashboard/Climb": "Subsystem",
+      "/SmartDashboard/Drive": "Subsystem",
+      "/SmartDashboard/Drive/Field": "Field2d",
+      "/SmartDashboard/Drive/Gyro": "Gyro",
+      "/SmartDashboard/Intake": "Subsystem",
+      "/SmartDashboard/Pivot": "Subsystem",
+      "/SmartDashboard/Shooter": "Subsystem",
+      "/SmartDashboard/Update Odom Blue Centre": "Command"
+    },
+    "windows": {
+      "/SmartDashboard/Drive/Field": {
+        "Far Notes": {
+          "style": "Box/Image"
+        },
+        "Note Trajectory": {
+          "arrows": false,
+          "style": "Line"
+        },
+        "Robot": {
+          "image": "C:\\Downloads\\falconslogo.jpg",
+          "length": 0.949999988079071,
+          "style": "Box/Image",
+          "width": 0.8500000238418579
+        },
+        "bottom": 1476,
+        "height": 8.210550308227539,
+        "left": 150,
+        "right": 2961,
+        "top": 79,
+        "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables Info": {
+    "visible": true
+  },
+  "NetworkTables Settings": {
+    "mode": "Client (NT4)",
+    "serverTeam": "5032"
+  }
+}

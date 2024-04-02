@@ -15,15 +15,12 @@ public class SetShooterTwoPID extends Command {
   private final ShooterPivot shooterpivot;
   private final double position;
   private final PIDController pidToSetpoint;
-  private final PIDController pidFixed;
   private final ArmFeedforward armFF;
   public SetShooterTwoPID(ShooterPivot shooterpivot, double pos) {
     this.shooterpivot = shooterpivot;
     this.position = pos;
-    this.pidToSetpoint = new PIDController(0.3, 0, 0);
-
-    this.pidFixed = new PIDController(0.3, 0.01, 0);
-    this.armFF = new ArmFeedforward(0, 0.35, 1.95, 0.02);
+    this.pidToSetpoint = new PIDController(0.2, 0, 0); //0.3, 0, 0
+    this.armFF = new ArmFeedforward(0, 0.75, 0);
     addRequirements(shooterpivot);
   }
 
@@ -33,24 +30,25 @@ public class SetShooterTwoPID extends Command {
     System.out.println("Fixed Start");
     shooterpivot.setBrakeMode();
     pidToSetpoint.reset();
-    pidFixed.reset();
     pidToSetpoint.setSetpoint(position);
     pidToSetpoint.setTolerance(1);
-    pidFixed.setTolerance(0.1);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double FFOutput = armFF.calculate(shooterpivot.getDegreesFromRaw() * ShooterConstants.degreesToRadians, 0);
-    double PIDToSetpointOutput = pidToSetpoint.calculate(shooterpivot.getDegreesFromRaw(), position);
-    double PIDFixedOutput = pidFixed.calculate(shooterpivot.getDegreesFromRaw(), position);
+    double FFOutput = armFF.calculate(shooterpivot.getThruBore(), 0);
+    double PIDToSetpointOutput = pidToSetpoint.calculate(shooterpivot.getThruBore() * ShooterConstants.radiansToDegrees, position);
+    
     double speed;
 
     if (pidToSetpoint.getPositionError() < 0) {
       speed = PIDToSetpointOutput / 5.0;
     } else {
        speed = PIDToSetpointOutput;
+    }
+    if (pidToSetpoint.atSetpoint()) {
+      speed += FFOutput;
     }
 
     if (shooterpivot.getSoftUpperLimit() && speed > 0 ) {

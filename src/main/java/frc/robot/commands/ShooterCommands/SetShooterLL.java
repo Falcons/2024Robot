@@ -4,6 +4,7 @@
 
 package frc.robot.commands.ShooterCommands;
 
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -11,17 +12,19 @@ import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.LimelightShooter;
 import frc.robot.subsystems.ShooterPivot;
 
-public class SetShooterPosition extends Command {
+public class SetShooterLL extends Command {
   private final ShooterPivot shooterpivot;
   private final LimelightShooter limelightshooter;
   private final PIDController pid;
-  //private final ArmFeedforward armFF;
+  private final ArmFeedforward armFF;
   
-  public SetShooterPosition(ShooterPivot shooterpivot, LimelightShooter ls) {
+  public SetShooterLL(ShooterPivot shooterpivot, LimelightShooter ls) {
     this.shooterpivot = shooterpivot;
     this.limelightshooter = ls;
     //this.pos = shooterpivot.returnClosest(limelightshooter.getDistanceSpeaker());
+
     this.pid = new PIDController(0.25, 0.1, 0); //P: 0.3
+    this.armFF = new ArmFeedforward(0, 0.75, 0);
     addRequirements(shooterpivot, limelightshooter);
   }
 
@@ -40,7 +43,8 @@ public class SetShooterPosition extends Command {
     double angle = -0.00105 * limelightshooter.getDistanceSpeaker() + 0.978;
     angle = shooterpivot.rawToDegrees(angle);
 
-    double PIDOutput = pid.calculate(shooterpivot.getDegreesFromRaw(), angle);
+    //double PIDOutput = pid.calculate(shooterpivot.getDegreesFromRaw(), angle);
+    double PIDOutput = pid.calculate(shooterpivot.getThruBore() * ShooterConstants.radiansToDegrees, angle);
 
     SmartDashboard.putNumber("Error", pid.getPositionError());
 

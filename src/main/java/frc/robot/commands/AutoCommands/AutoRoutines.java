@@ -12,7 +12,7 @@ import frc.robot.commands.DriveCommands.DriveStraight;
 import frc.robot.commands.IntakeCommands.EjectNote;
 import frc.robot.commands.IntakeCommands.Extend;
 import frc.robot.commands.IntakeCommands.Retract;
-import frc.robot.commands.ShooterCommands.SetShooterPosition;
+import frc.robot.commands.ShooterCommands.SetShooterLL;
 import frc.robot.commands.ShooterCommands.Shoot;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
@@ -25,7 +25,7 @@ public class AutoRoutines {
     public static class ShootWithLimelight extends ParallelRaceGroup {
         public ShootWithLimelight(Drivetrain drivetrain, Intake intake, Shooter shooter, ShooterPivot shooterpivot, LimelightShooter ls) {
             addCommands(
-                new SetShooterPosition(shooterpivot, ls),
+                new SetShooterLL(shooterpivot, ls),
                 new ParallelCommandGroup(
                     new Shoot(shooter, 1, 0.95).withTimeout(3),
                     new SequentialCommandGroup(
