@@ -19,9 +19,11 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.commands.AutoCommands.OneNoteWithTension;
+import frc.robot.commands.AutoCommands.RedAmpBlueSourceOneNoteTaxi;
 import frc.robot.commands.AutoCommands.RedAmpSideTwoNote;
 import frc.robot.commands.AutoCommands.RedSourceSideTwoNote;
 import frc.robot.commands.SetLEDs;
+import frc.robot.commands.AutoCommands.BlueAmpRedSourceOneNoteTaxi;
 import frc.robot.commands.AutoCommands.BlueAmpSideTwoNote;
 import frc.robot.commands.AutoCommands.BlueSourceRoutines;
 import frc.robot.commands.AutoCommands.BlueSourceSideTwoNote;
@@ -30,6 +32,7 @@ import frc.robot.commands.ClimbCommands.ClimbManual;
 import frc.robot.commands.DriveCommands.ArcadeDriveCmd;
 import frc.robot.commands.DriveCommands.CentretoNote;
 import frc.robot.commands.DriveCommands.CentretoSpeaker;
+import frc.robot.commands.DriveCommands.CentretoSpeakerTele;
 import frc.robot.commands.IntakeCommands.Extend;
 import frc.robot.commands.IntakeCommands.Retract;
 import frc.robot.commands.ShooterCommands.Down;
@@ -84,7 +87,10 @@ public class RobotContainer {
     leds.setDefaultCommand(new SetLEDs(leds, intake, shooter).ignoringDisable(true));
 
     chooser.setDefaultOption("One Note", new OneNoteWithTension(drivetrain, intake, shooter, shooterpivot, limelightshooter));
-    chooser.addOption("Two Note Centre", new TwoNoteCentreWithTension(drivetrain, intake, shooter, shooterpivot, limelightshooter));
+    chooser.addOption("Blue Amp/Red Source One Note", new BlueAmpRedSourceOneNoteTaxi(drivetrain, intake, shooter, shooterpivot, limelightshooter));
+    chooser.addOption("Red Amp/Blue Source One Note", new RedAmpBlueSourceOneNoteTaxi(drivetrain, intake, shooter, shooterpivot, limelightshooter));
+
+    chooser.addOption("Two Note Centre", new TwoNoteCentreWithTension(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
 
     chooser.addOption("Blue Amp Side", new BlueAmpSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
     chooser.addOption("Blue Source Side", new BlueSourceSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
@@ -95,6 +101,7 @@ public class RobotContainer {
 
     Shuffleboard.getTab("Auto").add(chooser);
     SmartDashboard.putData("Update Odom Blue Centre", new InstantCommand(() -> drivetrain.resetOdometry(DriveConstants.blueSubWooferCentre)).ignoringDisable(true));
+
     SmartDashboard.putData("Drive", drivetrain);
     SmartDashboard.putData("Intake", intake);
     SmartDashboard.putData("Pivot", shooterpivot);
@@ -120,7 +127,7 @@ public class RobotContainer {
     //centring
 
     driver.leftBumper().onTrue(new CentretoNote(drivetrain, limelightintake));
-    driver.rightBumper().onTrue(new CentretoSpeaker(drivetrain, limelightshooter));
+    driver.rightBumper().whileTrue(new CentretoSpeakerTele(drivetrain, limelightshooter, () -> -driver.getLeftY()));
 
     //configs
 
@@ -207,16 +214,16 @@ public class RobotContainer {
       .y()
       .and(driver.leftBumper())
       .whileTrue(drivetrain.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-*/
+  */
   }
 
   public Command getAutonomousCommand() {
-
+/*
     Command runTraj = Commands.runOnce(() -> drivetrain.resetOdometry(drivetrain.closeNoteBlue.getInitialPose()))
       .andThen(drivetrain.ramseteCommand)
       .andThen(Commands.runOnce(() -> drivetrain.tankDriveVolts(0, 0)));
-
-    return runTraj;
-    //return chooser.getSelected();
+*/
+    //return runTraj;
+    return chooser.getSelected();
   }
 }

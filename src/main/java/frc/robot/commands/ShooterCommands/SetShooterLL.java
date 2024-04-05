@@ -33,7 +33,7 @@ public class SetShooterLL extends Command {
   @Override
   public void initialize() {
     pid.reset();
-    limelightshooter.setDoubleEntry("priorityid", ShooterConstants.priorityid);
+    //limelightshooter.setDoubleEntry("priorityid", ShooterConstants.priorityid);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -42,6 +42,10 @@ public class SetShooterLL extends Command {
     double speed;
     double angle = -0.00105 * limelightshooter.getDistanceSpeaker() + 0.978;
     angle = shooterpivot.rawToDegrees(angle);
+
+    if (angle < ShooterConstants.pivotLowerLimit.getDegrees()) {
+      angle = ShooterConstants.pivotLowerLimit.getDegrees();
+    }
 
     //double PIDOutput = pid.calculate(shooterpivot.getDegreesFromRaw(), angle);
     double PIDOutput = pid.calculate(shooterpivot.getThruBore() * ShooterConstants.radiansToDegrees, angle);
@@ -68,7 +72,10 @@ public class SetShooterLL extends Command {
 
     //speed = (pid.calculate(shooterpivot.getThruBore(), angle));
     shooterpivot.setVoltage(PIDOutput);
+
+    SmartDashboard.putBoolean("Pivot/At Angle", Math.abs(shooterpivot.getDegrees() - limelightshooter.getShooterPivotAutoAngle()) < 1);
   }
+
 
 
   // Called once the command ends or is interrupted.

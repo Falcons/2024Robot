@@ -56,5 +56,8 @@
   "NetworkTables Settings": {
     "mode": "Client (NT4)",
     "serverTeam": "5032"
+  },
+  "NetworkTables View": {
+    "visible": false
   }
 }

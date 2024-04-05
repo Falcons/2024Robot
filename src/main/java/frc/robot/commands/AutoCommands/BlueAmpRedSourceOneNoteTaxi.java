@@ -5,8 +5,11 @@
 package frc.robot.commands.AutoCommands;
 
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.commands.DriveCommands.DriveStraight;
+import frc.robot.commands.DriveCommands.RotateAngle;
 import frc.robot.commands.IntakeCommands.EjectNote;
 import frc.robot.commands.ShooterCommands.SetShooterTwoPID;
 import frc.robot.commands.ShooterCommands.Shoot;
@@ -19,22 +22,19 @@ import frc.robot.subsystems.ShooterPivot;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class OneNoteWithTension extends SequentialCommandGroup {
-  /** Creates a new OneNoteWithTension. */
-  public OneNoteWithTension(Drivetrain drivetrain, Intake intake, Shooter shooter, ShooterPivot shooterpivot, LimelightShooter ls) {
+public class BlueAmpRedSourceOneNoteTaxi extends SequentialCommandGroup {
+  /** Creates a new SideTaxi. */
+  public BlueAmpRedSourceOneNoteTaxi(Drivetrain drivetrain, Intake intake, Shooter shooter, ShooterPivot shooterpivot, LimelightShooter ls) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new SetShooterTwoPID(shooterpivot, shooterpivot.rawToDegrees(0.95))
-      .raceWith(
-        new ParallelCommandGroup(
-          new Shoot(shooter, 1, 0.95).withTimeout(3),
-          new SequentialCommandGroup(
-            new WaitCommand(2), 
-            new EjectNote(intake, 1).withTimeout(1)
-          )
-        )
-      )
+      new OneNoteWithTension(drivetrain, intake, shooter, shooterpivot, ls),
+      new DriveStraight(drivetrain, 0.5).until(() -> drivetrain.getDistance() > 0.5),
+      new ParallelRaceGroup(
+        new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegrees() < 43).withTimeout(0.75),
+        new RotateAngle(drivetrain, 55).withTimeout(0.75)
+      ),
+      new DriveStraight(drivetrain, 0.5).withTimeout(1.5)
     );
   }
 }

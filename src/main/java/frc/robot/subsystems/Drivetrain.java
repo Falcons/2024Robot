@@ -183,9 +183,9 @@ public class Drivetrain extends SubsystemBase {
             DriveConstants.blueSubWooferCentre,
             // Pass through these two interior waypoints, making an 's' curve path
             List.of(
-              DriveConstants.blueCentreNote.getTranslation(), 
-              DriveConstants.blueCloseAmp.getTranslation(),
-              DriveConstants.blueCloseSource.getTranslation()),
+              DriveConstants.noteBlueCentreNote.getTranslation(), 
+              DriveConstants.noteBlueCloseAmp.getTranslation(),
+              DriveConstants.noteBlueCloseSource.getTranslation()),
             // End 3 meters straight ahead of where we started, facing forward
             DriveConstants.blueSubWooferCentre,
             // Pass config
@@ -218,11 +218,11 @@ public class Drivetrain extends SubsystemBase {
       DriveConstants.blueCloseSource));
 */
     field.getObject("Far Notes").setPoses(List.of(
-      DriveConstants.blueFarAmp1, 
-      DriveConstants.blueFarAmp2,
-      DriveConstants.blueFarCentre,
-      DriveConstants.blueFarSource2,
-      DriveConstants.blueFarSource1));
+      DriveConstants.noteFarAmp1, 
+      DriveConstants.noteFarAmp2,
+      DriveConstants.noteFarCentre,
+      DriveConstants.noteFarSource2,
+      DriveConstants.noteFarSource1));
   }
   // Tells SysID how to pass voltage to motor controllers
   public void voltageDrive (Measure<Voltage> volts) {
