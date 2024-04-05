@@ -8,14 +8,12 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Drivetrain;
 
-public class RotateToAngle extends Command {
+public class RotateAngle extends Command {
   private final Drivetrain drivetrain;
-  private final double currentAngle;
   private final double angle;
   private final PIDController pid;
-  public RotateToAngle(Drivetrain drivetrain, double angle) {
+  public RotateAngle(Drivetrain drivetrain, double angle) {
     this.drivetrain = drivetrain;
-    this.currentAngle = drivetrain.getAngle();
     this.angle = angle;
     this.pid = new PIDController(0.02, 0, 0);
     addRequirements(drivetrain);
@@ -25,15 +23,15 @@ public class RotateToAngle extends Command {
   @Override
   public void initialize() {
     System.out.println("RotateToAngle Start");
+    drivetrain.setYaw(0);
     pid.reset();
-    pid.setSetpoint(currentAngle + angle);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double leftSpeed = pid.calculate(drivetrain.getAngle());
-    double rightSpeed = -pid.calculate(drivetrain.getAngle());
+    double leftSpeed = pid.calculate(drivetrain.getAngle(), angle);
+    double rightSpeed = -pid.calculate(drivetrain.getAngle(),angle);
 
     drivetrain.tankDrive(leftSpeed, rightSpeed);
   }

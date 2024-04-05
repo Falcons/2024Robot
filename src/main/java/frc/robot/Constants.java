@@ -4,7 +4,10 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.util.Units;
 
 public final class Constants {
     public static final class DriveConstants {
@@ -19,6 +22,35 @@ public final class Constants {
 
         public static final int pigeonID = 12;
 
+        public static final double ksVolts = 0.21888; //Garage: 0.21888, Carpet: 0.21599
+        public static final double kvVoltSecondsPerMeter = 2.6459; //Garage: 2.6459, Carpet: 2.4096
+        public static final double kaVoltSecondsSquaredPerMeter = 0.62854; //Garage: 0.62854, Carpet: 0.87369
+
+        public static final double kPVel = 3.739; //Garage: 3.739, Carpet: 3.538
+        
+        public static final double kTrackwidthMeters = 0.683;
+        public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);
+
+        public static final double kMaxSpeedMetersPerSecond = 1;
+        public static final double kMaxAccelerationMetersPerSecondSquared = 0.25;
+
+        public static final double kRamseteB = 2;
+        public static final double kRamseteZeta = 0.7;
+
+        public static final double kRobotLength = Units.inchesToMeters(37.5);
+
+        public static final Pose2d blueSubWooferCentre = new Pose2d(Units.inchesToMeters(36.37) + kRobotLength / 2.0, Units.inchesToMeters(218.42), new Rotation2d());
+        public static final Pose2d blueSubWooferAmpSide = new Pose2d(Units.inchesToMeters(36.37), Units.inchesToMeters(218.42), new Rotation2d());
+
+        public static final Pose2d noteBlueCloseAmp = new Pose2d(Units.inchesToMeters(114.0), Units.inchesToMeters(275.42), new Rotation2d());
+        public static final Pose2d noteBlueCentreNote = new Pose2d(Units.inchesToMeters(114.0), Units.inchesToMeters(218.42), new Rotation2d());
+        public static final Pose2d noteBlueCloseSource = new Pose2d(Units.inchesToMeters(114.0), Units.inchesToMeters(161.42), new Rotation2d());
+
+        public static final Pose2d noteFarAmp1 = new Pose2d(Units.inchesToMeters(324.6), Units.inchesToMeters(293.64), new Rotation2d());
+        public static final Pose2d noteFarAmp2 = new Pose2d(Units.inchesToMeters(324.6), Units.inchesToMeters(227.64), new Rotation2d());
+        public static final Pose2d noteFarCentre = new Pose2d(Units.inchesToMeters(324.6), Units.inchesToMeters(161.64), new Rotation2d());
+        public static final Pose2d noteFarSource2 = new Pose2d(Units.inchesToMeters(324.6), Units.inchesToMeters(95.64), new Rotation2d());
+        public static final Pose2d noteFarSource1 = new Pose2d(Units.inchesToMeters(324.6), Units.inchesToMeters(29.64), new Rotation2d());
     }
 
     public static final class IntakeConstants {
@@ -43,11 +75,12 @@ public final class Constants {
         public static final double speakerDepth = 0.89;
 
         //public static final double pivotUpperLimit = 54.77; //raw: 0.944
-        public static final Rotation2d pivotUpperLimit = Rotation2d.fromDegrees(57.6);
+        public static final Rotation2d pivotUpperLimit = Rotation2d.fromDegrees(59.1);
         //public static final double pivotLowerLimit = 36.41; //raw: 0.893
-        public static final Rotation2d pivotLowerLimit = Rotation2d.fromDegrees(36.32);
+        public static final Rotation2d pivotLowerLimit = Rotation2d.fromDegrees(36.33);
 
         public static final double degreesToRadians = Math.PI / 180.0;
+        public static final double radiansToDegrees = 180.0 / Math.PI;
         public static final double rotationsToDegrees = 360;
         public static final double rotationsToRadians = 2 * Math.PI;
         public static final Rotation2d pivotZeroOffset = Rotation2d.fromDegrees(285.07);
@@ -63,7 +96,7 @@ public final class Constants {
         public static final double maxSpeed = 0;
         public static final double maxAccel = 0;    
 
-        public static final int priorityid = 7;
+        public static final int priorityid = 4;
     }
 
     public static final class ClimbConstants {

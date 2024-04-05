@@ -22,7 +22,7 @@ public class ArcadeDriveCmd extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    drivetrain.setSafteyEnabled(false);
+    drivetrain.setSafetyEnabled(false);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

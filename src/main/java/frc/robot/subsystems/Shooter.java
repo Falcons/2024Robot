@@ -6,10 +6,6 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.Slot1Configs;
-import com.ctre.phoenix6.configs.Slot2Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -21,13 +17,14 @@ public class Shooter extends SubsystemBase {
   private final TalonFX leftFlywheel = new TalonFX(ShooterConstants.leftFlywheelID);
   private final TalonFX rightFlywheel = new TalonFX(ShooterConstants.rightFlywheelID);
 
-  
+  private double leftSpeed;
+  private double rightSpeed;
 
   public Shooter() {
-    leftFlywheel.getConfigurator().apply(new TalonFXConfiguration());
-    rightFlywheel.getConfigurator().apply(new TalonFXConfiguration());
+    //leftFlywheel.getConfigurator().apply(new TalonFXConfiguration());
+    //rightFlywheel.getConfigurator().apply(new TalonFXConfiguration());
 
-  /*
+  
     var leftFlywheelConfigurator = leftFlywheel.getConfigurator();
     var rightFlywheelConfigurator = rightFlywheel.getConfigurator();
     var currentlimitConfigs = new CurrentLimitsConfigs();
@@ -38,9 +35,9 @@ public class Shooter extends SubsystemBase {
     currentlimitConfigs.SupplyCurrentLimitEnable = true;
     currentlimitConfigs.StatorCurrentLimitEnable = true;
 
-    //leftFlywheelConfigurator.apply(currentlimitConfigs);
-    //rightFlywheelConfigurator.apply(currentlimitConfigs);
-*/
+    leftFlywheelConfigurator.apply(currentlimitConfigs);
+    rightFlywheelConfigurator.apply(currentlimitConfigs);
+
     rightFlywheel.setInverted(true);
   }
 
@@ -54,13 +51,17 @@ public class Shooter extends SubsystemBase {
     rightFlywheel.stopMotor();
   }
 
+  public boolean getShoot() {
+    return leftSpeed > 90 && rightSpeed > 90;
+  }
+
   @Override
   public void periodic() {
-    double leftSpeed = leftFlywheel.getVelocity().getValueAsDouble();
-    double rightSpeed = rightFlywheel.getVelocity().getValueAsDouble();
-    SmartDashboard.putNumber("Left Shooter Speed", leftSpeed);
-    SmartDashboard.putNumber("Right Shooter Speed", rightSpeed);
-    SmartDashboard.putBoolean("Shoot", leftSpeed > 90 && rightSpeed > 90);
+    leftSpeed = leftFlywheel.getVelocity().getValueAsDouble();
+    rightSpeed = rightFlywheel.getVelocity().getValueAsDouble();
+    SmartDashboard.putNumber("Shooter/Left Shooter Speed", leftSpeed);
+    SmartDashboard.putNumber("Shooter/Right Shooter Speed", rightSpeed);
+    SmartDashboard.putBoolean("Shooter/Shoot", leftSpeed > 90 && rightSpeed > 90);
   }
 
   public Command Shoot(double leftSpeed, double rightSpeed) {

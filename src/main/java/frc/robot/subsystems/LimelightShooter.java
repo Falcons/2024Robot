@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import java.sql.Driver;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -12,7 +11,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.ShooterConstants;
 import frc.robot.LimelightHelpers;
 
 public class LimelightShooter extends SubsystemBase {
@@ -23,8 +21,8 @@ public class LimelightShooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Distance Speaker", getDistanceSpeaker());
-    SmartDashboard.putNumber("Setpoint Angle", getShooterPivotAutoAngle());
+    SmartDashboard.putNumber("LLShooter/Distance Speaker", getDistanceSpeaker());
+    SmartDashboard.putNumber("LLShooter/Setpoint Angle", getShooterPivotAutoAngle());
   }
 
   public void setPriorityID() {

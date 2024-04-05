@@ -73,10 +73,8 @@ public class Climb extends SubsystemBase {
   
   @Override
   public void periodic() {
-    SmartDashboard.putBoolean("Left Climb Limit", leftClimbLimit.get());
-    SmartDashboard.putBoolean("Right Climb Limit", rightClimbLimit.get());
-    SmartDashboard.putNumber("Left Climb", leftClimb.get());
-    SmartDashboard.putNumber("Right Climb", rightClimb.get());
+    SmartDashboard.putBoolean("Climb/Left Climb Limit", leftClimbLimit.get());
+    SmartDashboard.putBoolean("Climb/Right Climb Limit", rightClimbLimit.get());
   }
 
   public Command Up(double speed) {
