@@ -38,13 +38,13 @@ public class ClimbManual extends Command {
       realTimeRightSpeed = 0;
     }
 
-    if (climb.getLeftClimbLimit()) {
+    if (climb.getHardLeftBottomLimit()) {
       if (realTimeLeftSpeed >= 0) {
         realTimeLeftSpeed = 0;
       }
     }
 
-    if (climb.getRightClimbLimit()) {
+    if (climb.getHardRightBottomLimit()) {
       if (realTimeRightSpeed >= 0) {
         realTimeRightSpeed = 0;
       }

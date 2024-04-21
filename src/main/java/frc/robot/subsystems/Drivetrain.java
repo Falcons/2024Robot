@@ -38,7 +38,6 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
-import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -46,9 +45,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.LimelightHelpers;
@@ -99,9 +96,6 @@ public class Drivetrain extends SubsystemBase {
 
     
   public Drivetrain() {
-    //SendableRegistry.addChild(drive, frontLeft);
-    //SendableRegistry.addChild(drive, frontRight);
-
     frontRight.restoreFactoryDefaults();
     frontLeft.restoreFactoryDefaults();
     backRight.restoreFactoryDefaults();
@@ -217,127 +211,6 @@ public class Drivetrain extends SubsystemBase {
       DriveConstants.blueCentreNote,
       DriveConstants.blueCloseSource));
 */
-    field.getObject("Far Notes").setPoses(List.of(
-      DriveConstants.noteFarAmp1, 
-      DriveConstants.noteFarAmp2,
-      DriveConstants.noteFarCentre,
-      DriveConstants.noteFarSource2,
-      DriveConstants.noteFarSource1));
-  }
-  // Tells SysID how to pass voltage to motor controllers
-  public void voltageDrive (Measure<Voltage> volts) {
-    frontLeft.setVoltage(volts.in(Volts));
-    frontRight.setVoltage(volts.in(Volts));
-  }
-  // Tells SysId how to read voltage, position, velocity
-  public void log(SysIdRoutineLog log) {
-    double avgVoltage = ((frontLeft.getAppliedOutput() * frontLeft.getBusVoltage()) 
-      + (frontRight.getAppliedOutput() * frontRight.getBusVoltage())) / 2.0;
-
-    double avgLinearPos = (frontLeftEncoder.getPosition() + frontRightEncoder.getPosition()) / 2.0;
-
-    double avgLinearVel = (frontLeftEncoder.getVelocity() + frontRightEncoder.getVelocity()) / 2.0;
-
-    log.motor("drivetrain")
-    .voltage(m_appliedVoltage.mut_replace(avgVoltage,Volts))
-    .linearPosition(m_distance.mut_replace(avgLinearPos, Meters))
-    .linearVelocity(m_velocity.mut_replace(avgLinearVel, MetersPerSecond));
-  }
-
-  public void FastMode() {
-    setCoastMode();
-    drive.setMaxOutput(1);
-  }
-
-  public void SlowMode() {
-    setBrakeMode();
-    drive.setMaxOutput(0.3);
-  }
-
-  public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-    return new DifferentialDriveWheelSpeeds(frontLeftEncoder.getVelocity(), frontRightEncoder.getVelocity());
-  }
-
-  public void updateOdometry() {
-    poseEstimator.update(
-      gyro.getRotation2d(), 
-      frontLeftEncoder.getPosition(), 
-      frontRightEncoder.getPosition());
-
-    LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-shooter");
-    if (limelightMeasurement.tagCount >= 2) {
-      poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
-      poseEstimator.addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
-    }
-  }
-
-  public void resetOdometry(Pose2d pose) {
-    m_odometry.resetPosition(
-        gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition(), pose);
-  }
-
-  public void setMaxSpeed(double speed) {
-    drive.setMaxOutput(speed);
-  }
-
-  public void setBrakeMode() {
-    frontRight.setIdleMode(IdleMode.kBrake);
-    frontLeft.setIdleMode(IdleMode.kBrake);
-    backRight.setIdleMode(IdleMode.kBrake);
-    backLeft.setIdleMode(IdleMode.kBrake);
-  }
-
-  public void setCoastMode() {
-    frontRight.setIdleMode(IdleMode.kCoast);
-    frontLeft.setIdleMode(IdleMode.kCoast);
-    backRight.setIdleMode(IdleMode.kCoast);
-    backLeft.setIdleMode(IdleMode.kCoast);
-  }
-
-  public void stopMotors() {
-    frontLeft.stopMotor();
-    frontRight.stopMotor();
-  }
-
-  public void invertMotors() {
-    frontLeft.setInverted(true);
-    backLeft.setInverted(true);
-
-    frontRight.setInverted(false);
-    backRight.setInverted(false);
-  }
-
-  public void resetEncoders() {
-    frontLeftEncoder.setPosition(0);
-    frontRightEncoder.setPosition(0);
-    backLeftEncoder.setPosition(0);
-    backRightEncoder.setPosition(0);
-  }
-
-  public double getDistance() {
-    return (frontLeftEncoder.getPosition() + frontRightEncoder.getPosition()) / 2.0;
-  }
-
-  public void setSafetyEnabled(boolean state) {
-    drive.setSafetyEnabled(state);
-  }
-  
-  public void tankDrive(double leftSpeed, double rightSpeed){
-    drive.tankDrive(leftSpeed, rightSpeed);
-  }
-
-  public void tankDriveVolts(double leftVolts, double rightVolts) {
-    frontLeft.setVoltage(leftVolts);
-    frontRight.setVoltage(rightVolts);
-    drive.feed();
-  }
-
-  public void setYaw(double value) {
-    gyro.setYaw(value);
-  }
-
-  public void arcadeDrive(double speed, double rotation) {
-    drive.arcadeDrive(speed, rotation);
   }
 
   @Override
@@ -360,43 +233,172 @@ public class Drivetrain extends SubsystemBase {
 
     field.setRobotPose(m_odometry.getPoseMeters());
   }
+  // Drive commands
+  public void arcadeDrive(double speed, double rotation) {
+    drive.arcadeDrive(speed, rotation);
+  }
 
+  public void tankDrive(double leftSpeed, double rightSpeed){
+    drive.tankDrive(leftSpeed, rightSpeed);
+  }
+
+  public void tankDriveVolts(double leftVolts, double rightVolts) {
+    frontLeft.setVoltage(leftVolts);
+    frontRight.setVoltage(rightVolts);
+    drive.feed();
+  }
+
+  public void stopMotors() {
+    frontLeft.stopMotor();
+    frontRight.stopMotor();
+  }
+
+  // Fast and Slow Commands
+  public void setBrakeMode() {
+    frontRight.setIdleMode(IdleMode.kBrake);
+    frontLeft.setIdleMode(IdleMode.kBrake);
+    backRight.setIdleMode(IdleMode.kBrake);
+    backLeft.setIdleMode(IdleMode.kBrake);
+  }
+
+  public void setCoastMode() {
+    frontRight.setIdleMode(IdleMode.kCoast);
+    frontLeft.setIdleMode(IdleMode.kCoast);
+    backRight.setIdleMode(IdleMode.kCoast);
+    backLeft.setIdleMode(IdleMode.kCoast);
+  }
+
+  public void FastMode() {
+    setCoastMode();
+    drive.setMaxOutput(1);
+  }
+
+  public void SlowMode() {
+    setBrakeMode();
+    drive.setMaxOutput(0.3);
+  }
+
+  //Encoder Commands
+  public void resetEncoders() {
+    frontLeftEncoder.setPosition(0);
+    frontRightEncoder.setPosition(0);
+    backLeftEncoder.setPosition(0);
+    backRightEncoder.setPosition(0);
+  }
+
+  public double getDistance() {
+    return (frontLeftEncoder.getPosition() + frontRightEncoder.getPosition()) / 2.0;
+  }
+
+  //Gyro Commands
+  public void setYaw(double value) {
+    gyro.setYaw(value);
+  }
+
+  /**
+   * Used for compass, not code
+   * @return Angle in degrees, CW+
+   */
   public double getAngle() {
     return gyro.getAngle();
   }
-
+  /**
+   * Used for code
+   * @return Angle in degrees, CCW+
+   */
   public double getHeading() {
     return gyro.getRotation2d().getDegrees();
   }
 
   public double getTurnRate() {
+    //negative to change from CW+ to CCW+
     return -gyro.getRate();
+  }
+
+  //Odometry Commands
+  public void resetOdometry(Pose2d pose) {
+    m_odometry.resetPosition(
+        gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition(), pose);
   }
 
   public Pose2d getPose() {
     return m_odometry.getPoseMeters();
   }
 
+  /**
+   * Gives correct inversions to drivetrain
+   */
+  public void invertMotors() {
+    frontLeft.setInverted(true);
+    backLeft.setInverted(true);
+
+    frontRight.setInverted(false);
+    backRight.setInverted(false);
+  }
+
+  //Remove
+  public void setSafetyEnabled(boolean state) {
+    drive.setSafetyEnabled(state);
+  }
+
+  //Kinematics for Ramsetecommand
+  public DifferentialDriveWheelSpeeds getWheelSpeeds() {
+    return new DifferentialDriveWheelSpeeds(frontLeftEncoder.getVelocity(), frontRightEncoder.getVelocity());
+  }
+
+  // Odometry with Pose Estimator (uses April tags to tune, untested)
+  public void updateOdometry() {
+    poseEstimator.update(
+      gyro.getRotation2d(), 
+      frontLeftEncoder.getPosition(), 
+      frontRightEncoder.getPosition());
+
+    LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-shooter");
+    if (limelightMeasurement.tagCount >= 2) {
+      poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
+      poseEstimator.addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
+    }
+  }
+
+  // SysId Methods
+  // Tells SysId how to pass voltage to motor controllers
+  public void voltageDrive (Measure<Voltage> volts) {
+    frontLeft.setVoltage(volts.in(Volts));
+    frontRight.setVoltage(volts.in(Volts));
+  }
+  // Tells SysId how to read voltage, position, velocity
+  public void log(SysIdRoutineLog log) {
+    double avgVoltage = ((frontLeft.getAppliedOutput() * frontLeft.getBusVoltage()) 
+      + (frontRight.getAppliedOutput() * frontRight.getBusVoltage())) / 2.0;
+
+    double avgLinearPos = (frontLeftEncoder.getPosition() + frontRightEncoder.getPosition()) / 2.0;
+
+    double avgLinearVel = (frontLeftEncoder.getVelocity() + frontRightEncoder.getVelocity()) / 2.0;
+
+    log.motor("drivetrain")
+    .voltage(m_appliedVoltage.mut_replace(avgVoltage,Volts))
+    .linearPosition(m_distance.mut_replace(avgLinearPos, Meters))
+    .linearVelocity(m_velocity.mut_replace(avgLinearVel, MetersPerSecond));
+  }
+
+  // Individual motor testing
   public Command runFrontLeft() {
     return this.startEnd(() -> frontLeft.set(0.3), () -> frontLeft.stopMotor());
   }
-
   public Command runBackLeft() {
     return this.startEnd(() -> backLeft.set(0.3), () -> backLeft.stopMotor());
   }
-
   public Command runFrontRight() {
     return this.startEnd(() -> frontRight.set(0.3), () -> frontRight.stopMotor());
   }
-
   public Command runBackRight() {
     return this.startEnd(() -> backRight.set(0.3), () -> backRight.stopMotor());
   }
 
+  // Sys Id commands
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return m_sysIdRoutine.quasistatic(direction);
   }
-
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return m_sysIdRoutine.dynamic(direction);
   }

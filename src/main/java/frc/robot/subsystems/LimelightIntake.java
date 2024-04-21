@@ -13,9 +13,7 @@ public class LimelightIntake extends SubsystemBase {
   public LimelightIntake() {}
 
   @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-  }
+  public void periodic() {}
 
   public double getDoubleEntry(String entry) {
     return table.getEntry(entry).getDouble(0);

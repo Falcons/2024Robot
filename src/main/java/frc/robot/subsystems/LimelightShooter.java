@@ -11,13 +11,10 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.LimelightHelpers;
 
 public class LimelightShooter extends SubsystemBase {
   private final NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight-shooter");
-  public LimelightShooter() {
-    setPriorityID();
-  }
+  public LimelightShooter() {}
 
   @Override
   public void periodic() {
@@ -27,7 +24,6 @@ public class LimelightShooter extends SubsystemBase {
 
   public void setPriorityID() {
     if (DriverStation.getAlliance().isEmpty()) return;
-
     
     if (DriverStation.getAlliance().get() == Alliance.Red) {
       setDoubleEntry("priorityid", 4);

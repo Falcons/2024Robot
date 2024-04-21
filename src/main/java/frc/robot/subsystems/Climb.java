@@ -19,11 +19,11 @@ public class Climb extends SubsystemBase {
   private final CANSparkMax leftClimb = new CANSparkMax(ClimbConstants.leftClimbID, MotorType.kBrushless);
   private final CANSparkMax rightClimb = new CANSparkMax(ClimbConstants.rightClimbID, MotorType.kBrushless);
 
-  private final RelativeEncoder leftLiftEncoder = leftClimb.getEncoder();
-  private final RelativeEncoder rightLiftEncoder = rightClimb.getEncoder();
+  private final RelativeEncoder leftClimbEncoder = leftClimb.getEncoder();
+  private final RelativeEncoder rightClimbEncoder = rightClimb.getEncoder();
 
-  private final DigitalInput leftClimbLimit = new DigitalInput(ClimbConstants.leftClimbLimitPort);
-  private final DigitalInput rightClimbLimit = new DigitalInput(ClimbConstants.rightClimbLimitPort);
+  private final DigitalInput leftClimbLimit = new DigitalInput(ClimbConstants.leftClimbLimitDIOPort);
+  private final DigitalInput rightClimbLimit = new DigitalInput(ClimbConstants.rightClimbLimitDIOPort);
 
   public Climb() {
     leftClimb.restoreFactoryDefaults();
@@ -36,11 +36,6 @@ public class Climb extends SubsystemBase {
     setCoastMode();
   }
 
-  public void setClimb(double leftSpeed, double rightSpeed) {
-    leftClimb.set(leftSpeed);
-    rightClimb.set(rightSpeed);
-  }
-
   public void setLeftClimb(double speed){
     leftClimb.set(speed);
   }
@@ -48,12 +43,9 @@ public class Climb extends SubsystemBase {
     rightClimb.set(speed);
   }
 
-  public boolean getLeftClimbLimit() {
-    return leftClimbLimit.get();
-  }
-
-  public boolean getRightClimbLimit() {
-    return rightClimbLimit.get();
+  public void setClimb(double leftSpeed, double rightSpeed) {
+    leftClimb.set(leftSpeed);
+    rightClimb.set(rightSpeed);
   }
 
   public void stopClimb() {
@@ -61,6 +53,16 @@ public class Climb extends SubsystemBase {
     rightClimb.stopMotor();
   }
 
+  // Hard Limits
+  public boolean getHardLeftBottomLimit() {
+    return leftClimbLimit.get();
+  }
+
+  public boolean getHardRightBottomLimit() {
+    return rightClimbLimit.get();
+  }
+
+  //
   public void setBrakeMode() {
     leftClimb.setIdleMode(IdleMode.kBrake);
     rightClimb.setIdleMode(IdleMode.kBrake);
@@ -75,6 +77,8 @@ public class Climb extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putBoolean("Climb/Left Climb Limit", leftClimbLimit.get());
     SmartDashboard.putBoolean("Climb/Right Climb Limit", rightClimbLimit.get());
+    SmartDashboard.putNumber("Climb/Left Climb Encoder", leftClimbEncoder.getPosition());
+    SmartDashboard.putNumber("Climb/Right Climb Encoder", rightClimbEncoder.getPosition());
   }
 
   public Command Up(double speed) {

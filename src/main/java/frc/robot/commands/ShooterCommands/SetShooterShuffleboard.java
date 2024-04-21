@@ -37,8 +37,8 @@ public class SetShooterShuffleboard extends Command {
   public void execute() {
     double angle = SmartDashboard.getNumber("A", 36.33);
     pidToSetpoint.setSetpoint(angle);
-    double FFOutput = armFF.calculate(shooterpivot.getThruBore(), 0);
-    double PIDToSetpointOutput = pidToSetpoint.calculate(shooterpivot.getThruBore() * ShooterConstants.radiansToDegrees);
+    double FFOutput = armFF.calculate(shooterpivot.getPivotEncoder(), 0);
+    double PIDToSetpointOutput = pidToSetpoint.calculate(shooterpivot.getPivotEncoder() * ShooterConstants.radiansToDegrees);
 
     double speed;
 

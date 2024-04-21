@@ -5,10 +5,7 @@
 package frc.robot.commands.ShooterCommands;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.ShooterPivot;
 
 public class SetShooterFF extends Command {
@@ -29,7 +26,7 @@ public class SetShooterFF extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double FFOutput = armFF.calculate(shooterpivot.getThruBore(), 0);
+    double FFOutput = armFF.calculate(shooterpivot.getPivotEncoder(), 0);
 
     shooterpivot.setVoltage(FFOutput);
   }

@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.hardware.TalonFX;
 
@@ -21,15 +20,11 @@ public class Shooter extends SubsystemBase {
   private double rightSpeed;
 
   public Shooter() {
-    //leftFlywheel.getConfigurator().apply(new TalonFXConfiguration());
-    //rightFlywheel.getConfigurator().apply(new TalonFXConfiguration());
-
-  
+    // Setting current limits
     var leftFlywheelConfigurator = leftFlywheel.getConfigurator();
     var rightFlywheelConfigurator = rightFlywheel.getConfigurator();
     var currentlimitConfigs = new CurrentLimitsConfigs();
     
-
     currentlimitConfigs.SupplyCurrentLimit = 30.0;
     currentlimitConfigs.StatorCurrentLimit = 30.0;
     currentlimitConfigs.SupplyCurrentLimitEnable = true;
@@ -41,6 +36,17 @@ public class Shooter extends SubsystemBase {
     rightFlywheel.setInverted(true);
   }
 
+  @Override
+  public void periodic() {
+    leftSpeed = leftFlywheel.getVelocity().getValueAsDouble();
+    rightSpeed = rightFlywheel.getVelocity().getValueAsDouble();
+    
+    SmartDashboard.putNumber("Shooter/Left Shooter Speed", leftSpeed);
+    SmartDashboard.putNumber("Shooter/Right Shooter Speed", rightSpeed);
+    SmartDashboard.putBoolean("Shooter/Shoot", leftSpeed > 90 && rightSpeed > 90);
+  }
+
+  //Shooter Methods
   public void fire(double leftSpeed, double rightSpeed) {
     leftFlywheel.set(leftSpeed);
     rightFlywheel.set(rightSpeed);
@@ -51,28 +57,15 @@ public class Shooter extends SubsystemBase {
     rightFlywheel.stopMotor();
   }
 
+  /**
+   * @return True when flywheels are at 90%
+   */
   public boolean getShoot() {
     return leftSpeed > 90 && rightSpeed > 90;
   }
 
-  @Override
-  public void periodic() {
-    leftSpeed = leftFlywheel.getVelocity().getValueAsDouble();
-    rightSpeed = rightFlywheel.getVelocity().getValueAsDouble();
-    SmartDashboard.putNumber("Shooter/Left Shooter Speed", leftSpeed);
-    SmartDashboard.putNumber("Shooter/Right Shooter Speed", rightSpeed);
-    SmartDashboard.putBoolean("Shooter/Shoot", leftSpeed > 90 && rightSpeed > 90);
-  }
-
+  // Shooter Commands
   public Command Shoot(double leftSpeed, double rightSpeed) {
     return this.startEnd(() -> this.fire(leftSpeed, rightSpeed), () -> this.stopShooter());
-  }
-
-  public Command setSpeed(double leftSpeed, double rightSpeed) {
-    return this.runOnce(() -> fire(leftSpeed, rightSpeed));
-  }
-
-  public Command stop() {
-    return this.runOnce(() -> stopShooter());
   }
 }

@@ -10,12 +10,10 @@ import frc.robot.subsystems.ShooterPivot;
 
 public class SetShooterTrapMotion extends Command {
   private final ShooterPivot shooterpivot;
-  private final double angle;
   private final Rotation2d giveAngle;
 
   public SetShooterTrapMotion(ShooterPivot shooterpivot, double angle) {
     this.shooterpivot = shooterpivot;
-    this.angle = angle;
     this.giveAngle = new Rotation2d(angle);
 
     addRequirements(shooterpivot);

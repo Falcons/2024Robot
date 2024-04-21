@@ -29,12 +29,12 @@ import frc.robot.subsystems.ShooterPivot;
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class BlueAmpSideTwoNote extends SequentialCommandGroup {
-  /** Creates a new SideTaxi. */
+  /** Two Note Blue Amp */
   public BlueAmpSideTwoNote(Drivetrain drivetrain, Intake intake, Shooter shooter, ShooterPivot shooterpivot, LimelightShooter ls, LimelightIntake li) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new OneNoteWithTension(drivetrain, intake, shooter, shooterpivot, ls),
+      new OneNote(drivetrain, intake, shooter, shooterpivot, ls),
 
       //new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegreesFromRaw() < 41),
 

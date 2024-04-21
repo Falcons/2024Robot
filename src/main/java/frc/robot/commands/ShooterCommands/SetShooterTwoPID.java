@@ -37,8 +37,8 @@ public class SetShooterTwoPID extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double FFOutput = armFF.calculate(shooterpivot.getThruBore(), 0);
-    double PIDToSetpointOutput = pidToSetpoint.calculate(shooterpivot.getThruBore() * ShooterConstants.radiansToDegrees, position);
+    double FFOutput = armFF.calculate(shooterpivot.getPivotEncoder(), 0);
+    double PIDToSetpointOutput = pidToSetpoint.calculate(shooterpivot.getPivotEncoder() * ShooterConstants.radiansToDegrees, position);
     
     double speed;
 

@@ -21,8 +21,6 @@ public class SetShooterLL extends Command {
   public SetShooterLL(ShooterPivot shooterpivot, LimelightShooter ls) {
     this.shooterpivot = shooterpivot;
     this.limelightshooter = ls;
-    //this.pos = shooterpivot.returnClosest(limelightshooter.getDistanceSpeaker());
-
     this.pid = new PIDController(0.25, 0.1, 0); //P: 0.3
     this.armFF = new ArmFeedforward(0, 0.75, 0);
     addRequirements(shooterpivot, limelightshooter);
@@ -33,24 +31,27 @@ public class SetShooterLL extends Command {
   @Override
   public void initialize() {
     pid.reset();
-    //limelightshooter.setDoubleEntry("priorityid", ShooterConstants.priorityid);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     double speed;
+
+    /* Remove after testing new auto angle
+    // Calculation to convert Distance to Angle comes uses raw Pivot Encoder values,
+    // conversion method changes value into usable angle
     double angle = -0.00105 * limelightshooter.getDistanceSpeaker() + 0.978;
     angle = shooterpivot.rawToDegrees(angle);
+    */
+    double angle = limelightshooter.getShooterPivotAutoAngle();
 
     if (angle < ShooterConstants.pivotLowerLimit.getDegrees()) {
       angle = ShooterConstants.pivotLowerLimit.getDegrees();
     }
 
-    //double PIDOutput = pid.calculate(shooterpivot.getDegreesFromRaw(), angle);
-    double PIDOutput = pid.calculate(shooterpivot.getThruBore() * ShooterConstants.radiansToDegrees, angle);
-
-    SmartDashboard.putNumber("Error", pid.getPositionError());
+    double PIDOutput = pid.calculate(shooterpivot.getPivotEncoder() * ShooterConstants.radiansToDegrees, angle);
+    double FFOutput = armFF.calculate(shooterpivot.getPivotEncoder(), 0);
 
       if (pid.getPositionError() < 0) {
         speed = PIDOutput / 20.0;
@@ -58,20 +59,15 @@ public class SetShooterLL extends Command {
         speed = PIDOutput;
       }
 
+      speed += FFOutput;
+
       if (shooterpivot.getSoftUpperLimit() && speed > 0 ) {
         speed = 0;
-        System.out.println("0");
       } else if (shooterpivot.getSoftLowerLimit() && speed < 0) {
         speed = 0;
-        System.out.println("0");
       }
 
-    //shooterpivot.returnClosest(limelightshooter.getDistanceSpeaker());
-    //pos = shooterpivot.returnClosest(Units.inchesToMeters(limelightshooter.getDistanceSpeaker()) - ShooterConstants.speakerDepth);
-    //double angle = shooterpivot.getHashValue(pos);
-
-    //speed = (pid.calculate(shooterpivot.getThruBore(), angle));
-    shooterpivot.setVoltage(PIDOutput);
+    shooterpivot.setVoltage(speed);
 
     SmartDashboard.putBoolean("Pivot/At Angle", Math.abs(shooterpivot.getDegrees() - limelightshooter.getShooterPivotAutoAngle()) < 1);
   }

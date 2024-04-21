@@ -4,15 +4,11 @@
 
 package frc.robot.commands.AutoCommands;
 
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.DriveCommands.DriveStraight;
 import frc.robot.commands.DriveCommands.RotateAngle;
-import frc.robot.commands.IntakeCommands.EjectNote;
 import frc.robot.commands.ShooterCommands.SetShooterTwoPID;
-import frc.robot.commands.ShooterCommands.Shoot;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LimelightShooter;
@@ -23,12 +19,14 @@ import frc.robot.subsystems.ShooterPivot;
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class BlueAmpRedSourceOneNoteTaxi extends SequentialCommandGroup {
-  /** Creates a new SideTaxi. */
+  /**
+   *  One Note + Rotate and Taxi
+   */
   public BlueAmpRedSourceOneNoteTaxi(Drivetrain drivetrain, Intake intake, Shooter shooter, ShooterPivot shooterpivot, LimelightShooter ls) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new OneNoteWithTension(drivetrain, intake, shooter, shooterpivot, ls),
+      new OneNote(drivetrain, intake, shooter, shooterpivot, ls),
       new DriveStraight(drivetrain, 0.5).until(() -> drivetrain.getDistance() > 0.5),
       new ParallelRaceGroup(
         new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegrees() < 43).withTimeout(0.75),

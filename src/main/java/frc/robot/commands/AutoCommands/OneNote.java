@@ -19,13 +19,13 @@ import frc.robot.subsystems.ShooterPivot;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class OneNoteWithTension extends SequentialCommandGroup {
-  /** Creates a new OneNoteWithTension. */
-  public OneNoteWithTension(Drivetrain drivetrain, Intake intake, Shooter shooter, ShooterPivot shooterpivot, LimelightShooter ls) {
+public class OneNote extends SequentialCommandGroup {
+  /** One Note from any side of Subwoofer */
+  public OneNote(Drivetrain drivetrain, Intake intake, Shooter shooter, ShooterPivot shooterpivot, LimelightShooter ls) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new SetShooterTwoPID(shooterpivot, shooterpivot.rawToDegrees(0.95))
+      new SetShooterTwoPID(shooterpivot, 56.93)
       .raceWith(
         new ParallelCommandGroup(
           new Shoot(shooter, 1, 0.95).withTimeout(3),

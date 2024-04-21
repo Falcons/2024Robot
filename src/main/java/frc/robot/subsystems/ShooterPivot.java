@@ -38,7 +38,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 public class ShooterPivot extends SubsystemBase {
   private final CANSparkMax pivot;
-  private final SparkAbsoluteEncoder thruBore;
+  private final SparkAbsoluteEncoder pivotEncoder;
   private final DigitalInput pivotBottomLimit;
   
 
@@ -58,8 +58,6 @@ public class ShooterPivot extends SubsystemBase {
 
   private final SysIdRoutine pivotCharacterizer;
 
-  //private final SysIdRoutine oldpivotCharacterizer;
-
   private Rotation2d pivotGoal;
   private final Timer timer;
 
@@ -70,18 +68,18 @@ public class ShooterPivot extends SubsystemBase {
     pivot.setIdleMode(IdleMode.kBrake);
     pivot.setSmartCurrentLimit(40);
 
-    thruBore = pivot.getAbsoluteEncoder();
-    thruBore.setPositionConversionFactor(ShooterConstants.rotationsToRadians);
-    thruBore.setVelocityConversionFactor(ShooterConstants.rotationsToRadians);
-    thruBore.setZeroOffset(ShooterConstants.pivotZeroOffset.getRadians());
+    pivotEncoder = pivot.getAbsoluteEncoder();
+    pivotEncoder.setPositionConversionFactor(ShooterConstants.rotationsToRadians);
+    pivotEncoder.setVelocityConversionFactor(ShooterConstants.rotationsToRadians);
+    pivotEncoder.setZeroOffset(ShooterConstants.pivotZeroOffset.getRadians());
 
     pivotPID = pivot.getPIDController();
     pivotPID.setP(ShooterConstants.kP);
     pivotPID.setI(ShooterConstants.kI);
     pivotPID.setD(ShooterConstants.kD);
-    pivotPID.setFeedbackDevice(thruBore);
+    pivotPID.setFeedbackDevice(pivotEncoder);
 
-    pivotBottomLimit = new DigitalInput(ShooterConstants.pivotBottomLimitPort);
+    pivotBottomLimit = new DigitalInput(ShooterConstants.pivotBottomLimitDIOPort);
 
     pivotProfile = new TrapezoidProfile(
       new TrapezoidProfile.Constraints(
@@ -107,82 +105,6 @@ public class ShooterPivot extends SubsystemBase {
     pivotCharacterizer = new SysIdRoutine(new SysIdRoutine.Config(), pivotmechanism);
   }
 
-  public void voltageDrive (Measure<Voltage> volts) {
-    pivot.setVoltage(volts.in(Volts));
-  }
-
-  public void log(SysIdRoutineLog log) {
-    double voltage = pivot.getAppliedOutput() * pivot.getBusVoltage();
-    double angularPos = thruBore.getPosition();
-    double angularVel = thruBore.getVelocity();
-
-    log.motor("shooterpivot")
-      .voltage(m_appliedVoltage.mut_replace(voltage, Volts))
-      .angularPosition(m_angle.mut_replace(angularPos, Radians))
-      .angularVelocity(m_velocity.mut_replace(angularVel, RadiansPerSecond));
-  }
-/*
-  public double getRadiansFromRaw() {
-    return thruBore.getPosition() * 2 * Math.PI - 4.9754;
-  }
-  public double getDegreesFromRaw() {
-    return thruBore.getPosition() * 360 - 285.07;
-  }
-  public double rawToRadians(double raw) {
-    return raw * 2 * Math.PI - 4.9754;
-  }
-*/
-  public double rawToDegrees(double raw) {
-    return raw * 360 - 285.07;
-  }
-
-  public double getDegrees() {
-    return thruBore.getPosition() * ShooterConstants.radiansToDegrees;
-  }
-
-  public void setPivotAngle(Rotation2d angle) {
-    if (angle.getRadians() != pivotGoal.getRadians()) {
-      pivotGoal = angle;
-      pivotStart = new TrapezoidProfile.State(thruBore.getPosition(), thruBore.getVelocity());
-      timer.stop();
-      timer.reset();
-      timer.start();
-    }
-  }
-
-  public void setSpeed(double speed) {
-    pivot.set(speed);
-  }
-
-  public void setVoltage(double voltage) {
-    pivot.setVoltage(voltage);
-  }
-
-  public void stopShooterPivot() {
-    pivot.stopMotor();
-  }
-
-  public boolean getPivotLimit() {
-    return pivotBottomLimit.get();
-  }
-
-  public double getThruBore() {
-    return thruBore.getPosition();
-  }
-
-  public boolean getSoftUpperLimit() {
-    return (thruBore.getPosition() > ShooterConstants.pivotUpperLimit.getRadians());
-    //return (getDegreesFromRaw() > ShooterConstants.pivotUpperLimit.getDegrees());
-  }
-
-  public boolean getSoftLowerLimit() {
-    return (thruBore.getPosition()< ShooterConstants.pivotLowerLimit.getRadians());
-  }
-
-  public void setBrakeMode() {
-    pivot.setIdleMode(IdleMode.kBrake);
-  }
-
   @Override
   public void periodic() {
 /*
@@ -198,23 +120,95 @@ public class ShooterPivot extends SubsystemBase {
     pivotFFValue = pivotFF.calculate(pivotSetpoint.position, pivotSetpoint.velocity);
     //pivotPID.setReference(pivotSetpoint.position, ControlType.kPosition, 0, pivotFFValue, ArbFFUnits.kVoltage);
 */
-    SmartDashboard.putNumber("Pivot/Pivot Raw", thruBore.getPosition());
+    SmartDashboard.putNumber("Pivot/Pivot Raw", pivotEncoder.getPosition());
     SmartDashboard.putNumber("Pivot/Pivot Degrees", getDegrees());
-    SmartDashboard.putNumber("Pivot/Velocity", thruBore.getVelocity());
+    SmartDashboard.putNumber("Pivot/Velocity", pivotEncoder.getVelocity());
     SmartDashboard.putNumber("Pivot/Volts", pivot.getAppliedOutput() * pivot.getBusVoltage());
 
     SmartDashboard.putBoolean("Pivot/Upper Pivot Soft", getSoftUpperLimit());
     SmartDashboard.putBoolean("Pivot/Lower Pivot Soft", getSoftLowerLimit());
   }
 
-  public Command Up(double speed) {
-      return this.startEnd(() -> this.setSpeed(speed), () -> this.stopShooterPivot());
+  //Pivot Encoder Methods
+  /**
+ * Gets output of Pivot ThruBore Absolute Encoder
+ * @return angle in radians
+ */
+  public double getPivotEncoder() {
+    return pivotEncoder.getPosition();
   }
 
-  public Command Down(double speed) {
-    return this.startEnd(() -> this.setSpeed(-speed), () -> this.stopShooterPivot());
+  public double getDegrees() {
+    return pivotEncoder.getPosition() * ShooterConstants.radiansToDegrees;
+  }
+/* Remove after testing new auto angle
+  /**
+  * Converts from raw Pivot Encoder to angle
+  * @param raw old Pivot Encoder value from raw output
+  * @return angle in degrees
+  
+  public double rawToDegrees(double raw) {
+    return raw * 360 - 285.07;
+  }
+*/
+
+  public void setVoltage(double voltage) {
+    pivot.setVoltage(voltage);
   }
 
+  public void setSpeed(double speed) {
+    pivot.set(speed);
+  }
+
+  public void stopShooterPivot() {
+    pivot.stopMotor();
+  }
+
+  public void setBrakeMode() {
+    pivot.setIdleMode(IdleMode.kBrake);
+  }
+
+  // SysId logging methods
+  public void voltageDrive (Measure<Voltage> volts) {
+    pivot.setVoltage(volts.in(Volts));
+  }
+
+  public void log(SysIdRoutineLog log) {
+    double voltage = pivot.getAppliedOutput() * pivot.getBusVoltage();
+    double angularPos = pivotEncoder.getPosition();
+    double angularVel = pivotEncoder.getVelocity();
+
+    log.motor("shooterpivot")
+      .voltage(m_appliedVoltage.mut_replace(voltage, Volts))
+      .angularPosition(m_angle.mut_replace(angularPos, Radians))
+      .angularVelocity(m_velocity.mut_replace(angularVel, RadiansPerSecond));
+  }
+  
+  // Arm FF setter
+  public void setPivotAngle(Rotation2d angle) {
+    if (angle.getRadians() != pivotGoal.getRadians()) {
+      pivotGoal = angle;
+      pivotStart = new TrapezoidProfile.State(pivotEncoder.getPosition(), pivotEncoder.getVelocity());
+      timer.stop();
+      timer.reset();
+      timer.start();
+    }
+  }
+
+  // Hard limits use output from limit switches, soft limits restrict movement in code
+  public boolean getHardBottomLimit() {
+    return pivotBottomLimit.get();
+  }
+
+  public boolean getSoftUpperLimit() {
+    return (pivotEncoder.getPosition() > ShooterConstants.pivotUpperLimit.getRadians());
+  }
+
+  public boolean getSoftLowerLimit() {
+    return (pivotEncoder.getPosition()< ShooterConstants.pivotLowerLimit.getRadians());
+  }
+
+  // Sys Id commands
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return pivotCharacterizer.quasistatic(direction);
   }

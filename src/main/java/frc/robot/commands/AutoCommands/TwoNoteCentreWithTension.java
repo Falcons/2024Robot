@@ -8,10 +8,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import frc.robot.commands.DriveCommands.CentretoNote;
-import frc.robot.commands.DriveCommands.CentretoSpeaker;
 import frc.robot.commands.DriveCommands.DriveStraight;
-import frc.robot.commands.DriveCommands.RotateAngle;
 import frc.robot.commands.IntakeCommands.EjectNote;
 import frc.robot.commands.IntakeCommands.Extend;
 import frc.robot.commands.IntakeCommands.Retract;
@@ -29,12 +26,12 @@ import frc.robot.subsystems.ShooterPivot;
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class TwoNoteCentreWithTension extends SequentialCommandGroup {
-  /** Creates a new TwoNoteCentreWithTension. */
+  /** Two Note Centre (Either side) */
   public TwoNoteCentreWithTension(Drivetrain drivetrain, Intake intake, Shooter shooter, ShooterPivot shooterpivot, LimelightShooter ls, LimelightIntake li) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new OneNoteWithTension(drivetrain, intake, shooter, shooterpivot, ls),
+      new OneNote(drivetrain, intake, shooter, shooterpivot, ls),
 
       new SetShooterTwoPID(shooterpivot, 36.4).until(() -> shooterpivot.getDegrees() < 38),
 

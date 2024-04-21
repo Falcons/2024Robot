@@ -31,7 +31,7 @@ public class SetLEDs extends Command {
   @Override
   public void execute() {
     if (shooter.getShoot()) {
-      leds.setYellow();
+      leds.setPurple();
     } else if (intake.getRetractedorExtended() == "Extended" && !intake.hasNote()) {
       leds.setWhite();
     } else if (intake.hasNote()) {

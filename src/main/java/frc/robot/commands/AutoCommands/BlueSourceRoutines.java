@@ -27,7 +27,7 @@ public class BlueSourceRoutines extends SequentialCommandGroup {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new OneNoteWithTension(drivetrain, intake, shooter, shooterpivot, ls),
+      new OneNote(drivetrain, intake, shooter, shooterpivot, ls),
 
       //drive out and centre to note
       new DriveStraight(drivetrain, 0.5).until(() -> drivetrain.getDistance() > 0.25),
