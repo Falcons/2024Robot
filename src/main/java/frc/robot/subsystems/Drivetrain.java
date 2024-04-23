@@ -220,7 +220,7 @@ public class Drivetrain extends SubsystemBase {
   public Trajectory generateTrajectory(List<Translation2d> waypoints, Pose2d endPose){
     var autoVoltageConstraint = new DifferentialDriveVoltageConstraint(new SimpleMotorFeedforward(DriveConstants.ks,DriveConstants.kv,DriveConstants.ka),DriveConstants.kDriveKinematics,10);
     TrajectoryConfig config = new TrajectoryConfig(DriveConstants.kMaxSpeedMetersPerSecond,DriveConstants.kMaxAccelerationMetersPerSecondSquared).setKinematics(DriveConstants.kDriveKinematics).addConstraint(autoVoltageConstraint);
-     return TrajectoryGenerator.generateTrajectory(getPose(),waypoints,endPose,config);
+     return TrajectoryGenerator.generateTrajectory(new Pose2d(0,0,new Rotation2d(0)) /**getPose()*/,waypoints,endPose,config);
   }
   @Override
   public void periodic() {

@@ -184,7 +184,9 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return Commands.runOnce(
       () -> drivetrain.updateOdometry())
-    .andThen(drivetrain.ramsete(drivetrain.generateTrajectory(List.of(),new Pose2d(-6, 0, new Rotation2d(0)))))
+    .andThen(drivetrain.ramsete(drivetrain.generateTrajectory(
+      List.of(new Translation2d(1,-1), new Translation2d(2,1)),
+      new Pose2d(3,0,new Rotation2d(0)))))
     .andThen(() -> drivetrain.tankDriveVolts(0, 0));
     // return chooser.getSelected();
   }

@@ -20,18 +20,17 @@ public final class Constants {
 
         public static final int pigeonID = 12;
 
-        public static final double ks = 0;
-        public static final double kv = 0;
-        public static final double ka = 0;
+        public static final double ks = 0.21888;
+        public static final double kv = 0.26459;
+        public static final double ka = 0.62854;
 
-        public static final double kPVel = 0;
+        public static final double kPVel = 3.739;
 
-        public static final double kTrackWidthMetres = 0;
-        public static final DifferentialDriveKinematics kDriveKinematics = 
-            new DifferentialDriveKinematics(kTrackWidthMetres);
+        public static final double kTrackWidthMetres = 0.683;
+        public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackWidthMetres);
 
-        public static final double kMaxSpeedMetersPerSecond = 3;
-        public static final double kMaxAccelerationMetersPerSecondSquared = 1;
+        public static final double kMaxSpeedMetersPerSecond = 1;
+        public static final double kMaxAccelerationMetersPerSecondSquared = 0.25;
 
         public static final double kRamseteB = 2;
         public static final double kRamseteZeta = 0.7;
