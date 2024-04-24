@@ -25,7 +25,6 @@ public class CentretoSpeaker extends Command {
   @Override
   public void initialize() {
     System.out.println("CentreToSpeaker Start");
-    limelightShooter.setDoubleEntry("priorityid", ShooterConstants.priorityid);
     pid.reset();
     pid.setTolerance(1);
   }

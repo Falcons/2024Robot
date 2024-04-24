@@ -24,6 +24,7 @@ import frc.robot.commands.AutoCommands.RedAmpSideTwoNote;
 import frc.robot.commands.AutoCommands.RedSourceSideTwoNote;
 import frc.robot.commands.SetLEDs;
 import frc.robot.commands.AutoCommands.BlueAmpRedSourceOneNoteTaxi;
+import frc.robot.commands.AutoCommands.BlueAmpSidePathPlan;
 import frc.robot.commands.AutoCommands.BlueAmpSideTwoNote;
 import frc.robot.commands.AutoCommands.BlueSourceRoutines;
 import frc.robot.commands.AutoCommands.BlueSourceSideTwoNote;
@@ -92,6 +93,7 @@ public class RobotContainer {
     chooser.addOption("Red Amp Side", new RedAmpSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
     chooser.addOption("Red Source Side", new RedSourceSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
     chooser.addOption("Blue Source w/Routines", new BlueSourceRoutines(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
+    chooser.addOption("Blue Amp Path Plan", new BlueAmpSidePathPlan(drivetrain));
 
     Shuffleboard.getTab("Auto").add(chooser);
     SmartDashboard.putData("Update Odom Blue Centre", new InstantCommand(() -> drivetrain.resetOdometry(DriveConstants.blueSubWooferCentre)).ignoringDisable(true));
@@ -156,25 +158,7 @@ public class RobotContainer {
     operator.leftTrigger(0.9).whileTrue(shooter.Shoot(1, 0.95));
 
 /*
-    //Shooter Characterization
-    operator.a().and(operator.rightBumper())
-      .onTrue(shooterpivot.sysIdQuasistatic(Direction.kForward)
-      .until(shooterpivot::getSoftUpperLimit));
-
-    operator.b().and(operator.rightBumper())
-      .onTrue(shooterpivot.sysIdQuasistatic(Direction.kReverse)
-      .until(shooterpivot::getSoftLowerLimit));
-
-    operator.x().and(operator.rightBumper())
-      .onTrue(shooterpivot.sysIdDynamic(Direction.kForward)
-      .until(shooterpivot::getSoftUpperLimit));
-
-    operator.y().and(operator.rightBumper())
-      .onTrue(shooterpivot.sysIdDynamic(Direction.kReverse)
-      .until(shooterpivot::getSoftLowerLimit));
-*/
-/*
-    //Drive Characterization
+    //Subsystem Characterization
     driver
       .a()
       .and(driver.leftBumper())
