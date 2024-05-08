@@ -5,6 +5,7 @@
 package frc.robot;
 
 
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -17,15 +18,18 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.PathConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.commands.AutoCommands.OneNote;
 import frc.robot.commands.AutoCommands.RedAmpBlueSourceOneNoteTaxi;
 import frc.robot.commands.AutoCommands.RedAmpSideTwoNote;
 import frc.robot.commands.AutoCommands.RedSourceSideTwoNote;
+import frc.robot.commands.AutoCommands.RunPath;
 import frc.robot.commands.SetLEDs;
 import frc.robot.commands.AutoCommands.BlueAmpRedSourceOneNoteTaxi;
 import frc.robot.commands.AutoCommands.BlueAmpSidePathPlan;
 import frc.robot.commands.AutoCommands.BlueAmpSideTwoNote;
+import frc.robot.commands.AutoCommands.BlueAmpTwoPath;
 import frc.robot.commands.AutoCommands.BlueSourceRoutines;
 import frc.robot.commands.AutoCommands.BlueSourceSideTwoNote;
 import frc.robot.commands.AutoCommands.TwoNoteCentreWithTension;
@@ -61,10 +65,17 @@ public class RobotContainer {
   private final CommandXboxController driver = new CommandXboxController(0);
   private final CommandXboxController operator = new CommandXboxController(1);
 
-  SendableChooser<Command> chooser = new SendableChooser<>();
+  SendableChooser<Command> autoChooser = new SendableChooser<>();
+  SendableChooser<Trajectory> pathChooser = new SendableChooser<>();
 
   public RobotContainer() {
     configureBindings();
+
+    Command resetToBlueCentre = new InstantCommand(() -> drivetrain.resetOdometry(DriveConstants.blueSubWooferCentre)).ignoringDisable(true);
+    Command resetToBlueAmp = new InstantCommand(() -> drivetrain.resetOdometry(DriveConstants.blueSubWooferAmp)).ignoringDisable(true);
+    
+    SmartDashboard.putData("Reset Blue Centre", resetToBlueCentre);
+    SmartDashboard.putData("Reset Blue Amp", resetToBlueAmp);
 
       //Arcade Drive
     drivetrain.setDefaultCommand(
@@ -81,22 +92,26 @@ public class RobotContainer {
       //LED update
     leds.setDefaultCommand(new SetLEDs(leds, intake, shooter).ignoringDisable(true));
 
-    chooser.setDefaultOption("One Note", new OneNote(drivetrain, intake, shooter, shooterpivot, limelightshooter));
-    chooser.addOption("Blue Amp/Red Source One Note", new BlueAmpRedSourceOneNoteTaxi(drivetrain, intake, shooter, shooterpivot, limelightshooter));
-    chooser.addOption("Red Amp/Blue Source One Note", new RedAmpBlueSourceOneNoteTaxi(drivetrain, intake, shooter, shooterpivot, limelightshooter));
+    pathChooser.setDefaultOption("Blue Amp Two", PathConstants.blueAmpSideTwoNote);
+    pathChooser.addOption("All Mid", PathConstants.blueAllMidNotes);
+    pathChooser.addOption("Red Amp Two", PathConstants.redAmpTwoSide);
 
-    chooser.addOption("Two Note Centre", new TwoNoteCentreWithTension(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
+    autoChooser.setDefaultOption("One Note", new OneNote(drivetrain, intake, shooter, shooterpivot, limelightshooter));
+    autoChooser.addOption("Blue Amp/Red Source One Note", new BlueAmpRedSourceOneNoteTaxi(drivetrain, intake, shooter, shooterpivot, limelightshooter));
+    autoChooser.addOption("Red Amp/Blue Source One Note", new RedAmpBlueSourceOneNoteTaxi(drivetrain, intake, shooter, shooterpivot, limelightshooter));
 
-    chooser.addOption("Blue Amp Side", new BlueAmpSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
-    chooser.addOption("Blue Source Side", new BlueSourceSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
+    autoChooser.addOption("Two Note Centre", new TwoNoteCentreWithTension(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
 
-    chooser.addOption("Red Amp Side", new RedAmpSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
-    chooser.addOption("Red Source Side", new RedSourceSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
-    chooser.addOption("Blue Source w/Routines", new BlueSourceRoutines(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
-    chooser.addOption("Blue Amp Path Plan", new BlueAmpSidePathPlan(drivetrain));
+    autoChooser.addOption("Blue Amp Side", new BlueAmpSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
+    autoChooser.addOption("Blue Source Side", new BlueSourceSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
 
-    Shuffleboard.getTab("Auto").add(chooser);
-    SmartDashboard.putData("Update Odom Blue Centre", new InstantCommand(() -> drivetrain.resetOdometry(DriveConstants.blueSubWooferCentre)).ignoringDisable(true));
+    autoChooser.addOption("Red Amp Side", new RedAmpSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
+    autoChooser.addOption("Red Source Side", new RedSourceSideTwoNote(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
+    autoChooser.addOption("Blue Source w/Routines", new BlueSourceRoutines(drivetrain, intake, shooter, shooterpivot, limelightshooter, limelightintake));
+    autoChooser.addOption("Blue Amp Path Plan", new BlueAmpTwoPath(drivetrain, intake, shooter, shooterpivot, limelightshooter));
+
+    Shuffleboard.getTab("Auto").add(autoChooser);
+    Shuffleboard.getTab("Auto").add(pathChooser);
 
     SmartDashboard.putData("Drive", drivetrain);
     SmartDashboard.putData("Intake", intake);
@@ -185,6 +200,8 @@ public class RobotContainer {
       .andThen(Commands.runOnce(() -> drivetrain.tankDriveVolts(0, 0)));
 */
     //return runTraj;
-    return chooser.getSelected();
+    return autoChooser.getSelected();
+    //return new RunPath(drivetrain, pathChooser.getSelected());
+    //return new PathPlannerAuto("Test Auto");
   }
 }
