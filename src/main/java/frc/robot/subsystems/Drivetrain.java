@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
+import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -40,6 +41,7 @@ import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -55,7 +57,7 @@ import frc.robot.LimelightHelpers;
 import frc.robot.Constants.DriveConstants;
 
 public class Drivetrain extends SubsystemBase {
-  private final Pigeon2 gyro = new Pigeon2(DriveConstants.pigeonID);
+  private final AHRS gyro = new AHRS(SPI.Port.kMXP);
   private final CANSparkMax frontRight = new CANSparkMax(DriveConstants.frontRightID,  MotorType.kBrushless);
   private final CANSparkMax frontLeft = new CANSparkMax(DriveConstants.frontLeftID,  MotorType.kBrushless);
   private final CANSparkMax backRight = new CANSparkMax(DriveConstants.backRightID,  MotorType.kBrushless);
@@ -79,7 +81,7 @@ public class Drivetrain extends SubsystemBase {
   private final DifferentialDrivePoseEstimator poseEstimator = 
     new DifferentialDrivePoseEstimator(
       kinematics, 
-      gyro.getRotation2d(), 
+      gyro.getRotation2d(),
       frontLeftEncoder.getPosition(), 
       frontRightEncoder.getPosition(), 
       new Pose2d(),
@@ -143,7 +145,8 @@ public class Drivetrain extends SubsystemBase {
     setCoastMode();
 
     resetEncoders();
-    gyro.setYaw(0);
+    //gyro.setYaw(0);
+    gyro.zeroYaw();
 
     m_odometry = new DifferentialDriveOdometry(gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition());
     m_odometry.resetPosition(new Rotation2d(), 0, 0, DriveConstants.blueSubWooferCentre);
@@ -333,7 +336,8 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void setYaw(double value) {
-    gyro.setYaw(value);
+    //gyro.setYaw(value);
+    gyro.zeroYaw();
   }
 
   public void arcadeDrive(double speed, double rotation) {
