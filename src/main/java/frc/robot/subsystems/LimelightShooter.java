@@ -30,9 +30,9 @@ public class LimelightShooter extends SubsystemBase {
 
     
     if (DriverStation.getAlliance().get() == Alliance.Red) {
-      setDoubleEntry("priorityid", 4);
+      //setDoubleEntry("priorityid", 4);
     } else if (DriverStation.getAlliance().get() == Alliance.Blue) {
-      setDoubleEntry("priorityid", 7);
+      //setDoubleEntry("priorityid", 7);
     }
   }
 
