@@ -87,8 +87,6 @@ public class ShooterPivot extends SubsystemBase {
       .pid(ShooterConstants.kP, ShooterConstants.kI, ShooterConstants.kD)
       .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
     pivotConfig.smartCurrentLimit(40);
-    
-    thruBore = pivot.getAbsoluteEncoder();
 
     // pivotPID = pivot.getClosedLoopController();
     // pivotPID.setP(ShooterConstants.kP);
@@ -116,6 +114,7 @@ public class ShooterPivot extends SubsystemBase {
 
     // pivot.burnFlash();
     pivot.configure(pivotConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    thruBore = pivot.getAbsoluteEncoder();
 
     timer = new Timer();
     //timer.start();
