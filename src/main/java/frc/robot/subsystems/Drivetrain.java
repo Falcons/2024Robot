@@ -1,0 +1,414 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+package frc.robot.subsystems;
+
+import com.ctre.phoenix6.hardware.Pigeon2;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
+//import static edu.wpi.first.units.MutableMeasure.mutable;
+import edu.wpi.first.units.measure.MutVoltage;
+import edu.wpi.first.units.measure.MutDistance;
+import edu.wpi.first.units.measure.MutLinearVelocity;
+
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+
+import java.util.List;
+
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.LimelightHelpers;
+import frc.robot.Constants.DriveConstants;
+
+public class Drivetrain extends SubsystemBase {
+  private final Pigeon2 gyro = new Pigeon2(DriveConstants.pigeonID);
+  private final SparkMax frontRight = new SparkMax(DriveConstants.frontRightID,  MotorType.kBrushless);
+  private final SparkMax frontLeft = new SparkMax(DriveConstants.frontLeftID,  MotorType.kBrushless);
+  private final SparkMax backRight = new SparkMax(DriveConstants.backRightID,  MotorType.kBrushless);
+  private final SparkMax backLeft = new SparkMax(DriveConstants.backLeftID,  MotorType.kBrushless);
+
+  private final SparkMaxConfig frontRightConfig = new SparkMaxConfig();
+  private final SparkMaxConfig frontLeftConfig = new SparkMaxConfig();
+  private final SparkMaxConfig backRightConfig = new SparkMaxConfig();
+  private final SparkMaxConfig backLeftConfig = new SparkMaxConfig();
+  
+  private final RelativeEncoder frontRightEncoder = frontRight.getEncoder();
+  private final RelativeEncoder frontLeftEncoder = frontLeft.getEncoder();
+  private final RelativeEncoder backRightEncoder = backRight.getEncoder();
+  private final RelativeEncoder backLeftEncoder = backLeft.getEncoder();
+
+  private final DifferentialDrive drive = new DifferentialDrive(frontLeft::set, frontRight::set);
+
+  private final DifferentialDriveOdometry m_odometry;
+  private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(0.683);
+  public RamseteCommand ramseteCommand;
+  public Trajectory exampleTrajectory;
+  public Trajectory closeNoteBlue;
+
+  private final Field2d field = new Field2d();
+
+  private final DifferentialDrivePoseEstimator poseEstimator = 
+    new DifferentialDrivePoseEstimator(
+      kinematics, 
+      gyro.getRotation2d(), 
+      frontLeftEncoder.getPosition(), 
+      frontRightEncoder.getPosition(), 
+      new Pose2d(),
+      VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
+      VecBuilder.fill(0.5,0.5,Units.degreesToRadians(30)));
+
+  // Mutable holder for unit-safe values, persisted to avoid reallocation.
+  private final MutVoltage m_appliedVoltage = Volts.mutable(0);
+  private final MutDistance m_distance = Meters.mutable(0);
+  private final MutLinearVelocity m_velocity = MetersPerSecond.mutable(0);
+
+  private final SysIdRoutine.Mechanism mechanism = new SysIdRoutine.Mechanism(
+    this::voltageDrive, this::log, this);
+
+  // Create a new SysId routine for characterizing the drive.
+  private final SysIdRoutine m_sysIdRoutine = new SysIdRoutine(new SysIdRoutine.Config(), mechanism);
+
+    
+  public Drivetrain() {
+    //SendableRegistry.addChild(drive, frontLeft);
+    //SendableRegistry.addChild(drive, frontRight);
+
+    // frontRight.restoreFactoryDefaults();
+    // frontLeft.restoreFactoryDefaults();
+    // backRight.restoreFactoryDefaults();
+    // backLeft.restoreFactoryDefaults();
+
+    Timer.delay(4);
+
+    drive.setSafetyEnabled(false);
+
+    frontLeftConfig
+      .inverted(true);
+    frontLeftConfig.encoder
+      .positionConversionFactor(DriveConstants.RevToMetre)
+      .velocityConversionFactor(DriveConstants.RPMToMetresPerSecond);
+    backLeftConfig
+      .inverted(true);
+    backLeftConfig.encoder
+      .positionConversionFactor(DriveConstants.RevToMetre)
+      .velocityConversionFactor(DriveConstants.RPMToMetresPerSecond);
+
+    frontRightConfig
+      .smartCurrentLimit(40)
+      .inverted(false);
+    frontRightConfig.encoder
+      .positionConversionFactor(DriveConstants.RevToMetre)
+      .velocityConversionFactor(DriveConstants.RPMToMetresPerSecond);
+    backRightConfig
+      .smartCurrentLimit(40)
+      .inverted(false);
+    backRightConfig.encoder
+      .positionConversionFactor(DriveConstants.RevToMetre)
+      .velocityConversionFactor(DriveConstants.RPMToMetresPerSecond);
+
+    backRightConfig.follow(frontRight);
+    backLeftConfig.follow(frontLeft);
+
+    setCoastMode();
+    applyConfig();
+
+    resetEncoders();
+    gyro.setYaw(0);
+
+    m_odometry = new DifferentialDriveOdometry(gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition());
+    m_odometry.resetPosition(new Rotation2d(), 0, 0, DriveConstants.blueSubWooferCentre);
+
+    var autoVoltageConstraint =
+        new DifferentialDriveVoltageConstraint(
+            new SimpleMotorFeedforward(
+                DriveConstants.ksVolts,
+                DriveConstants.kvVoltSecondsPerMeter,
+                DriveConstants.kaVoltSecondsSquaredPerMeter),
+            DriveConstants.kDriveKinematics,
+            10);
+    
+    TrajectoryConfig config =
+        new TrajectoryConfig(
+                DriveConstants.kMaxSpeedMetersPerSecond,
+                DriveConstants.kMaxAccelerationMetersPerSecondSquared)
+            // Add kinematics to ensure max speed is actually obeyed
+            .setKinematics(DriveConstants.kDriveKinematics)
+            // Apply the voltage constraint
+            .addConstraint(autoVoltageConstraint);
+    
+    exampleTrajectory =
+        TrajectoryGenerator.generateTrajectory(
+            // Start at the origin facing the +X direction
+            new Pose2d(0, 0, new Rotation2d(0)),
+            // Pass through these two interior waypoints, making an 's' curve path
+            List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+            // End 3 meters straight ahead of where we started, facing forward
+            new Pose2d(3, 0, new Rotation2d(0)),
+            // Pass config
+            config);
+    
+    closeNoteBlue =
+        TrajectoryGenerator.generateTrajectory(
+            // Start at the origin facing the +X direction
+            DriveConstants.blueSubWooferCentre,
+            // Pass through these two interior waypoints, making an 's' curve path
+            List.of(
+              DriveConstants.noteBlueCentreNote.getTranslation(), 
+              DriveConstants.noteBlueCloseAmp.getTranslation(),
+              DriveConstants.noteBlueCloseSource.getTranslation()),
+            // End 3 meters straight ahead of where we started, facing forward
+            DriveConstants.blueSubWooferCentre,
+            // Pass config
+            config);
+    
+    ramseteCommand =
+            new RamseteCommand(
+                closeNoteBlue,
+                this::getPose,
+                new RamseteController(DriveConstants.kRamseteB, DriveConstants.kRamseteZeta),
+                new SimpleMotorFeedforward(
+                    DriveConstants.ksVolts,
+                    DriveConstants.kvVoltSecondsPerMeter,
+                    DriveConstants.kaVoltSecondsSquaredPerMeter),
+                DriveConstants.kDriveKinematics,
+                this::getWheelSpeeds,
+                new PIDController(DriveConstants.kPVel, 0, 0),
+                new PIDController(DriveConstants.kPVel, 0, 0),
+                // RamseteCommand passes volts to the callback
+                this::tankDriveVolts,
+                this);
+
+    SmartDashboard.putData("Drive/Field", field);
+    SmartDashboard.putData("Drive/Gyro", gyro);
+    field.getObject("Note Trajectory").setTrajectory(closeNoteBlue);
+/*
+    field.getObject("Close Notes").setPoses(List.of(
+      DriveConstants.blueCloseAmp, 
+      DriveConstants.blueCentreNote,
+      DriveConstants.blueCloseSource));
+*/
+    field.getObject("Far Notes").setPoses(List.of(
+      DriveConstants.noteFarAmp1, 
+      DriveConstants.noteFarAmp2,
+      DriveConstants.noteFarCentre,
+      DriveConstants.noteFarSource2,
+      DriveConstants.noteFarSource1));
+  }
+  // Tells SysID how to pass voltage to motor controllers
+  public void voltageDrive (Voltage volts) {
+    frontLeft.setVoltage(volts.in(Volts));
+    frontRight.setVoltage(volts.in(Volts));
+  }
+  // Tells SysId how to read voltage, position, velocity
+  public void log(SysIdRoutineLog log) {
+    double avgVoltage = ((frontLeft.getAppliedOutput() * frontLeft.getBusVoltage()) 
+      + (frontRight.getAppliedOutput() * frontRight.getBusVoltage())) / 2.0;
+
+    double avgLinearPos = (frontLeftEncoder.getPosition() + frontRightEncoder.getPosition()) / 2.0;
+
+    double avgLinearVel = (frontLeftEncoder.getVelocity() + frontRightEncoder.getVelocity()) / 2.0;
+
+    log.motor("drivetrain")
+    .voltage(m_appliedVoltage.mut_replace(avgVoltage,Volts))
+    .linearPosition(m_distance.mut_replace(avgLinearPos, Meters))
+    .linearVelocity(m_velocity.mut_replace(avgLinearVel, MetersPerSecond));
+  }
+
+  public void FastMode() {
+    setCoastMode();
+    drive.setMaxOutput(1);
+  }
+
+  public void SlowMode() {
+    setBrakeMode();
+    drive.setMaxOutput(0.3);
+  }
+
+  public DifferentialDriveWheelSpeeds getWheelSpeeds() {
+    return new DifferentialDriveWheelSpeeds(frontLeftEncoder.getVelocity(), frontRightEncoder.getVelocity());
+  }
+
+  public void updateOdometry() {
+    poseEstimator.update(
+      gyro.getRotation2d(), 
+      frontLeftEncoder.getPosition(), 
+      frontRightEncoder.getPosition());
+
+    LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-shooter");
+    if (limelightMeasurement.tagCount >= 2) {
+      poseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
+      poseEstimator.addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
+    }
+  }
+
+  public void resetOdometry(Pose2d pose) {
+    m_odometry.resetPosition(
+        gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition(), pose);
+  }
+
+  public void setMaxSpeed(double speed) {
+    drive.setMaxOutput(speed);
+  }
+
+  public void setBrakeMode() {
+    frontRightConfig.idleMode(IdleMode.kBrake);
+    frontLeftConfig.idleMode(IdleMode.kBrake);
+    backRightConfig.idleMode(IdleMode.kBrake);
+    backLeftConfig.idleMode(IdleMode.kBrake);
+  }
+
+  public void setCoastMode() {
+    frontRightConfig.idleMode(IdleMode.kCoast);
+    frontLeftConfig.idleMode(IdleMode.kCoast);
+    backRightConfig.idleMode(IdleMode.kCoast);
+    backLeftConfig.idleMode(IdleMode.kCoast);
+  }
+
+  public void applyConfig(){
+    frontLeft.configure(frontLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    backLeft.configure(backLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    frontRight.configure(frontRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    backRight.configure(backRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  }
+
+  public void stopMotors() {
+    frontLeft.stopMotor();
+    frontRight.stopMotor();
+  }
+
+  public void invertMotors() {
+    frontLeftConfig.inverted(true);
+    backLeftConfig.inverted(true);
+
+    frontRightConfig.inverted(false);
+    backRightConfig.inverted(false);
+  }
+
+  public void resetEncoders() {
+    frontLeftEncoder.setPosition(0);
+    frontRightEncoder.setPosition(0);
+    backLeftEncoder.setPosition(0);
+    backRightEncoder.setPosition(0);
+  }
+
+  public double getDistance() {
+    return (frontLeftEncoder.getPosition() + frontRightEncoder.getPosition()) / 2.0;
+  }
+
+  public void setSafetyEnabled(boolean state) {
+    drive.setSafetyEnabled(state);
+  }
+  
+  public void tankDrive(double leftSpeed, double rightSpeed){
+    drive.tankDrive(leftSpeed, rightSpeed);
+  }
+
+  public void tankDriveVolts(double leftVolts, double rightVolts) {
+    frontLeft.setVoltage(leftVolts);
+    frontRight.setVoltage(rightVolts);
+    drive.feed();
+  }
+
+  public void setYaw(double value) {
+    gyro.setYaw(value);
+  }
+
+  public void arcadeDrive(double speed, double rotation) {
+    drive.arcadeDrive(speed, rotation);
+  }
+
+  @Override
+  public void periodic() {
+    SmartDashboard.putNumber("Drive/Left Voltage", frontLeft.getAppliedOutput() * RobotController.getBatteryVoltage());
+    SmartDashboard.putNumber("Drive/Distance", getDistance());
+    SmartDashboard.putNumber("Drive/Gyro Angle", gyro.getYaw().getValueAsDouble());
+
+    SmartDashboard.putNumber("Drive/Left Position", frontLeftEncoder.getPosition());
+    SmartDashboard.putNumber("Drive/Right Position", frontRightEncoder.getPosition());
+    SmartDashboard.putNumber("Drive/Left Velocity", frontLeftEncoder.getVelocity());
+    SmartDashboard.putNumber("Drive/Right Velocity", frontLeftEncoder.getVelocity());
+    SmartDashboard.putNumber("Drive/X", m_odometry.getPoseMeters().getX());
+    SmartDashboard.putNumber("Drive/Y", m_odometry.getPoseMeters().getY());
+
+    //updateOdometry();
+    m_odometry.update(gyro.getRotation2d(),
+      frontLeftEncoder.getPosition(),
+      frontRightEncoder.getPosition());
+
+    field.setRobotPose(m_odometry.getPoseMeters());
+  }
+
+  public double getAngle() {
+    return gyro.getYaw().getValueAsDouble();
+  }
+
+  public double getHeading() {
+    return gyro.getRotation2d().getDegrees();
+  }
+
+  public double getTurnRate() {
+    return -gyro.getAngularVelocityZWorld().getValueAsDouble();
+  }
+
+  public Pose2d getPose() {
+    return m_odometry.getPoseMeters();
+  }
+
+  public Command runFrontLeft() {
+    return this.startEnd(() -> frontLeft.set(0.3), () -> frontLeft.stopMotor());
+  }
+
+  public Command runBackLeft() {
+    return this.startEnd(() -> backLeft.set(0.3), () -> backLeft.stopMotor());
+  }
+
+  public Command runFrontRight() {
+    return this.startEnd(() -> frontRight.set(0.3), () -> frontRight.stopMotor());
+  }
+
+  public Command runBackRight() {
+    return this.startEnd(() -> backRight.set(0.3), () -> backRight.stopMotor());
+  }
+
+  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutine.quasistatic(direction);
+  }
+
+  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutine.dynamic(direction);
+  }
+}
